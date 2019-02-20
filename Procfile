@@ -1,0 +1,1 @@
+web: python3 -m xdev_bot
