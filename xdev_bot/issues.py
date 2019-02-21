@@ -1,12 +1,14 @@
 """ Issue related events"""
 import gidgethub.routing
 
+from .project_board import PROJECT_BOARD
+
 router = gidgethub.routing.Router()
 
 
 @router.register("issues", action="opened")
 async def issue_opened_event(event, gh, *args, **kwargs):
-    """ Whenever an issue is opened, greet the author and say thanks.
+    """ Whenever an issue is opened, create a card in Backlog Queue project board.
 
     Subscribe to the Github issues event and
     specifically to the "opened" issues event
@@ -17,11 +19,17 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     - gh: the gidgethub GitHub API, which we use to make API calls
           to GitHub
     """
-
-    url = event.data["issue"]["comments_url"]
-    author = event.data["issue"]["user"]["login"]
-
-    message = (
-        f"Thanks for the report @{author}! I will look into it ASAP! ( I am a bot)."
+    to_do_column_id = PROJECT_BOARD["to_do_column_id"]
+    project_board_name = PROJECT_BOARD["name"]
+    issue_url = event.data["issue"]["url"]
+    url = f"/projects/columns/{to_do_column_id}/cards"
+    print(
+        f"Creating Card in {project_board_name} project board for issue : {issue_url}"
     )
-    await gh.post(url, data={"body": message})
+
+    # POST /projects/columns/:column_id/cards
+    await gh.post(
+        url,
+        data={"note": issue_url},
+        accept="application/vnd.github.inertia-preview+json",
+    )
