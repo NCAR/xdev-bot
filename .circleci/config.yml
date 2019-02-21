@@ -1,0 +1,47 @@
+version: 2
+workflows:
+  version: 2
+  default:
+    jobs:
+      - test-3.6
+      - test-3.7
+
+
+default-job: &default-job
+  docker:
+    - image: continuumio/miniconda:latest
+  steps:
+    - checkout
+    - restore_cache:
+        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+    - run:
+        name: Install conda environment
+        command: .circleci/install.sh
+    - run:
+        name: Running checks
+        command: |
+          source activate ${ENV_NAME}
+          .circleci/${CHECK_SCRIPT}
+    - save_cache:
+        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+        paths:
+          - "/opt/conda/envs/${ENV_NAME}/"
+          - "/opt/conda/pkgs"
+
+jobs:
+
+  test-3.6:
+    <<: *default-job
+    environment:
+      ENV_NAME: "xdev-bot"
+      ENV_SCRIPT: "environment-3.6.yml"
+      CHECK_SCRIPT: "test-unit-coverage.sh"
+
+  test-3.7:
+    <<: *default-job
+    environment:
+      ENV_NAME: "xdev-bot"
+      ENV_SCRIPT: "environment-3.7.yml"
+      CHECK_SCRIPT: "test-unit-coverage.sh"
+
+  
