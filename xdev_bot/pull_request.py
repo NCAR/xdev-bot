@@ -18,6 +18,6 @@ async def pull_request_merge_event(event, gh, *args, **kwargs):
 
     if merged:
         author = event.data["pull_request"]["user"]["login"]
-        merged_by = event.data["pull_request"]["merged_by"]
+        merged_by = event.data["pull_request"]["merged_by"]["login"]
         message = f"Thank for your contribution @{author}! Thank you @{merged_by} for your merging this ! ( I am a bot)."
         await gh.post(url, data={"body": message})
