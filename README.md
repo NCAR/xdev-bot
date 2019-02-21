@@ -6,7 +6,7 @@
 
 # Xdev Bot 
 
-This is a GitHub bot for Xdev Team. It runs on Heroku and uses the [@xdev-bot](https://github.com/xdev-bot) GitHub user.
+This is a GitHub bot for tracking and managing **Xdev Team**. It runs on Heroku and uses the [@xdev-bot](https://github.com/xdev-bot) GitHub user.
 
 
 ## Deployment 
@@ -22,7 +22,6 @@ This is a GitHub bot for Xdev Team. It runs on Heroku and uses the [@xdev-bot](h
 
 - When you see “Your app was successfully deployed”, click on the “View” button.
 
-- You should see “Hello world.”. Copy the website URL.
 
 **NOTE:** Install Heroku toolbelt to see your logs. Once you have Heroku toolbelt installed, you can read the logs by:
 
