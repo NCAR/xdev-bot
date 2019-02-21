@@ -1,4 +1,4 @@
-name: xdev-bot-dev
+name: xdev-bot
 channels:
   - conda-forge
 dependencies:
