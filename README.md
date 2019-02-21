@@ -1,8 +1,5 @@
 
 [![CircleCI](https://img.shields.io/circleci/project/github/NCAR/xdev-bot/master.svg?style=for-the-badge&logo=circleci)](https://circleci.com/gh/NCAR/xdev-bot/tree/master)
-
-
-
 [![Codecoverage](https://img.shields.io/codecov/c/github/NCAR/xdev-bot.svg?style=for-the-badge)](https://codecov.io/gh/NCAR/xdev-bot)
 
 
