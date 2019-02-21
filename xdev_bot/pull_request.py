@@ -21,7 +21,6 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     print(
         f"Creating Card in {project_board_name} project board for pull request : {pull_request_url}"
     )
-    url = event.data["pull_request"]["comments_url"]
 
     # POST /projects/columns/:column_id/cards
     await gh.post(
