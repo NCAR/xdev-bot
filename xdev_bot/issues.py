@@ -21,7 +21,7 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     """
     to_do_column_id = PROJECT_BOARD["to_do_column_id"]
     project_board_name = PROJECT_BOARD["name"]
-    issue_url = event.data["issue"]["url"]
+    issue_url = event.data["issue"]["html_url"]
     url = f"/projects/columns/{to_do_column_id}/cards"
     print(
         f"Creating Card in {project_board_name} project board for issue : {issue_url}"
