@@ -19,10 +19,10 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     - gh: the gidgethub GitHub API, which we use to make API calls
           to GitHub
     """
-    to_do_column_id = PROJECT_BOARD["to_do_column_id"]
+    backlog_column_id = PROJECT_BOARD["columns"]["backlog"]["id"]
     project_board_name = PROJECT_BOARD["name"]
     issue_url = event.data["issue"]["html_url"]
-    url = f"/projects/columns/{to_do_column_id}/cards"
+    url = f"/projects/columns/{backlog_column_id}/cards"
     print(
         f"Creating Card in {project_board_name} project board for issue : {issue_url}"
     )
