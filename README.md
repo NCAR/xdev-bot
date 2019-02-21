@@ -1,6 +1,15 @@
+
+[![CircleCI](https://img.shields.io/circleci/project/github/NCAR/xdev-bot/master.svg?style=for-the-badge&logo=circleci)](https://circleci.com/gh/NCAR/xdev-bot/tree/master)
+
+
+
+[![Codecoverage](https://img.shields.io/codecov/c/github/NCAR/xdev-bot.svg?style=for-the-badge)](https://codecov.io/gh/NCAR/xdev-bot)
+
+
+
 # Xdev Bot 
 
-This is a GitHub bot for Xdev Team. It will run on Heroku and uses the [@xdev-bot](https://github.com/xdev-bot) GitHub user.
+This is a GitHub bot for Xdev Team. It runs on Heroku and uses the [@xdev-bot](https://github.com/xdev-bot) GitHub user.
 
 
 ## Deployment 
