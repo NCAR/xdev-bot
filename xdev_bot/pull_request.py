@@ -7,6 +7,7 @@ router = gidgethub.routing.Router()
 
 
 @router.register("pull_request", action="opened")
+@router.register("pull_request", action="reopened")
 async def pull_request_opened_event(event, gh, *args, **kwargs):
     """ Whenever a PR is opened, create a card in:
 
@@ -14,6 +15,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     - column = "In Progress"
 
     """
+
     in_progress_column_id = PROJECT_BOARD["columns"]["in_progress"]["id"]
     project_board_name = PROJECT_BOARD["name"]
     pull_request_url = event.data["pull_request"]["html_url"]
