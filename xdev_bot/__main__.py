@@ -28,7 +28,6 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     await gh.post(url, data={"body": message})
 
 
-
 @router.register("pull_request", action="closed")
 async def pull_request_merge_event(event, gh, *args, **kwargs):
     """ Whenever a PR is merged, greet the author and say thanks to both the PR author 
@@ -37,8 +36,8 @@ async def pull_request_merge_event(event, gh, *args, **kwargs):
     """
 
     url = event.data["pull_request"]["comments_url"]
-    
-    # PR can be closed without being merged. 
+
+    # PR can be closed without being merged.
     merged = event.data["pull_request"]["merged"]
 
     if merged:
