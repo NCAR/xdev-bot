@@ -5,7 +5,10 @@ import s3fs
 
 router = gidgethub.routing.Router()
 
+# Connect to S3 using default credentials
 fs = s3fs.S3FileSystem(anon=False)
+
+# Specify bucket/database file
 DB = "xdev-bot/database.csv"
 
 PROJECT_BOARD = {
@@ -27,6 +30,8 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     column_url = event.data["project_card"]["column_url"]
     column_id = event.data["project_card"]["column_id"]
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
+    created_at = event.data["project_card"]["created_at"]
+    updated_at = event.data["project_card"]["updated_at"]
     entry = {
         "card_url": card_url,
         "card_id": card_id,
@@ -34,9 +39,13 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         "column_url": column_url,
         "column_id": column_id,
         "column_name": column_name,
+        "created_at": created_at,
+        "updated_at": updated_at,
     }
     temp_df = pd.DataFrame([entry])
     try:
+        # If the databse file exists, open it in
+        # a pandas dataframe
         if fs.exists(DB):
             with fs.open(DB, "r") as f:
                 print(f"Reading Existing Database from {DB} S3 bucket")
@@ -44,7 +53,17 @@ async def project_card_created_event(event, gh, *args, **kwargs):
                 print(df.head())
 
         else:
-            columns = ["column_name", "column_id", "column_url", "note", "card_id", "card_url"]
+            # Create empty dataframe
+            columns = [
+                "column_name",
+                "column_id",
+                "column_url",
+                "note",
+                "card_id",
+                "card_url",
+                "created_at",
+                "updated_at",
+            ]
             df = pd.DataFrame(columns=columns)
 
         df = pd.concat([temp_df, df], ignore_index=True, sort=False)
