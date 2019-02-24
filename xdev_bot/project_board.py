@@ -39,8 +39,8 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     try:
         if fs.exists(DB):
             with fs.open(DB, "r") as f:
-                print("Reading Existing Database")
-                df = pd.read_csv(f)
+                print(f"Reading Existing Database from {DB} S3 bucket")
+                df = pd.read_csv(f, index_col=0)
                 print(df.head())
 
         else:
@@ -50,7 +50,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         df = pd.concat([temp_df, df], ignore_index=True, sort=False)
 
         with fs.open(DB, "w") as f:
-            print(f"Saving Database at {f}")
+            print(f"Saving Database in {DB} S3 bucket")
             print(df.head())
             df.to_csv(f, index=True)
 
