@@ -7,7 +7,6 @@ router = gidgethub.routing.Router()
 
 
 @router.register("pull_request", action="opened")
-@router.register("pull_request", action="reopened")
 async def pull_request_opened_event(event, gh, *args, **kwargs):
     """ Whenever a PR is opened, create a card in:
 
@@ -26,7 +25,22 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
 
     # POST /projects/columns/:column_id/cards
     await gh.post(
-        url,
-        data={"note": pull_request_url},
-        accept="application/vnd.github.inertia-preview+json",
+        url, data={"note": pull_request_url}, accept="application/vnd.github.inertia-preview+json"
     )
+
+
+@router.register("pull_request", action="closed")
+async def pull_request_closed_event(event, gh, *args, **kwargs):
+    """ Whenever a PR is closed, there are two scenarios:
+
+    - PR is closed after merging
+    - PR closed without merging
+
+    When the PR is merged, move card from `In progress` column to
+     `Done` column of `Backlog Queue`
+
+    TODO: When the PR is closed without merging,
+    """
+
+    # PR can be closed without being merged.
+    pass

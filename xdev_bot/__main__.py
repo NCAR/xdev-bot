@@ -9,9 +9,9 @@ from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgethub import routing, sansio
 
-from . import issues, pull_request
+from . import issues, project_board, pull_request
 
-router = routing.Router(pull_request.router, issues.router)
+router = routing.Router(pull_request.router, issues.router, project_board.router)
 cache = cachetools.LRUCache(maxsize=500)
 
 USER = "xdev-bot"
@@ -35,9 +35,7 @@ async def main(request):
 
         # Create a session
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(
-                session, USER, oauth_token=oauth_token, cache=cache
-            )
+            gh = gh_aiohttp.GitHubAPI(session, USER, oauth_token=oauth_token, cache=cache)
 
             # Give GitHub some time to reach internal consistency.
             await asyncio.sleep(1)
