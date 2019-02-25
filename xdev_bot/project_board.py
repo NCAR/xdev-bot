@@ -102,10 +102,20 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     if len(note_items) == 7:
         _event_type = note_items[-2]
 
-        if _event_type in {"pull", "issues"}:
-            # Construct Issue or PR API url
-            _event_api_url = "https://api.github.com/repos/" + "/".join(note_items[-4:])
+        # Construct Issue or PR API url
+        # * Issue url looks like https://api.github.com/repos/NCAR/xdev-bot-testing/issues/2
+        # * PR url looks like 'https://api.github.com/repos/NCAR/xdev-bot-testing/pulls/3'
+        if _event_type == "issues":
+            prefix = "/".join(note_items[-4:])
 
+        elif _event_type == "pull":
+            # In html_url, pull requests are referred to as 'pull'
+            # API url uses `pulls` instead.
+            p = note_items[-4:]
+            p[-2] = "pulls"
+            prefix = "/".join(p)
+
+        _event_api_url = "https://api.github.com/repos/" + prefix
         # Assign card mover to issue or pull request
         print(f"Assigning user={card_mover} to {card_note}")
         await gh.post(_event_api_url, data={"assignee": card_mover})
