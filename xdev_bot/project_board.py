@@ -75,3 +75,31 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 
     except Exception as exc:
         raise exc
+
+
+@router.register("project_card", action="moved")
+async def project_card_moved_event(event, gh, *args, **kwargs):
+    card_id = event.data["project_card"]["id"]
+    column_url = event.data["project_card"]["column_url"]
+    column_id = event.data["project_card"]["column_id"]
+    column_name = PROJECT_BOARD["columns_reverse"][column_id]
+    updated_at = event.data["project_card"]["updated_at"]
+
+    # If the databse file exists, open it in
+    # a pandas dataframe
+    if fs.exists(DB):
+        with fs.open(DB, "r+") as f:
+            print(f"Reading Existing Database from {DB} S3 bucket")
+            df = pd.read_csv(f, index_col=0)
+            print(df.head())
+
+            df.loc[df["card_id"] == card_id, "column_name"] = column_name
+            df.loc[df["card_id"] == card_id, "column_url"] = column_url
+            df.loc[df["card_id"] == card_id, "column_id"] = column_id
+            df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
+            print(f"Saving Database in {DB} S3 bucket")
+            print(df.head())
+            df.to_csv(f, index=True)
+
+    else:
+        raise ValueError("Couldn't modify database")
