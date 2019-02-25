@@ -1,32 +1,29 @@
 """ Issue related events"""
 import gidgethub.routing
+import s3fs
+import pandas as pd
 
 from .project_board import PROJECT_BOARD
+
+fs = s3fs.S3FileSystem(anon=False)
+
+DB = "xdev-bot/database.csv"
 
 router = gidgethub.routing.Router()
 
 
 @router.register("issues", action="opened")
-@router.register("issues", action="reopened")
 async def issue_opened_event(event, gh, *args, **kwargs):
     """ Whenever an issue is opened, create a card in
 
     - project_board = "Backlog Queue"
     - column = "Backlog"
-
-    Subscribe to the Github issues event and
-    specifically to the "opened" issues event
-    Two important params:
-
-    - event: the representation of Github webhook event. We
-             can access the event payload by doing `event.data`
-    - gh: the gidgethub GitHub API, which we use to make API calls
-          to GitHub
     """
     backlog_column_id = PROJECT_BOARD["columns"]["backlog"]["id"]
     project_board_name = PROJECT_BOARD["name"]
     issue_url = event.data["issue"]["html_url"]
     url = f"/projects/columns/{backlog_column_id}/cards"
+
     print(
         f"Creating Card in {project_board_name} project board for issue : {issue_url}"
     )
@@ -35,5 +32,47 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     await gh.post(
         url,
         data={"note": issue_url},
+        accept="application/vnd.github.inertia-preview+json",
+    )
+
+
+@router.register("issues", action="closed")
+async def issue_closed_event(event, gh, *args, **kwargs):
+    """ Whenever an issue is closed:
+
+    - find card associated with issue (get card ID)
+    - construct URL for card
+    - get column ID of "done" column
+    - retrieve updated_at from payload and update database
+    - update card information (new column ID)
+
+    """
+    done_column_id = PROJECT_BOARD["columns"]["done"]["id"]
+    project_board_name = PROJECT_BOARD["name"]
+
+    issue_url = event.data["issue"]["html_url"]
+    updated_at = event.data["issue"]["updated_at"]
+
+    with fs.open(DB) as f:
+        df = pd.read_csv(f, index_col=0)
+
+    row = df["note"] == issue_url
+    card_id = df.loc[row].card_id
+    df.loc[row]["updated_at"] = updated_at
+
+    print(
+        f"Updating database: move card {card_id} to done column"
+    )
+    with fs.open(DB, "w") as f:
+        df.to_csv(f)
+
+    print(
+        f"Closing Card in {project_board_name} project board for issue : {issue_url}"
+    )
+    # POST /projects/columns/cards/:card_id/moves
+    url = f"/projects/columns/cards/{card_id}/moves"
+    await gh.post(
+        url,
+        data={"position": "top", "column_id": done_column_id},
         accept="application/vnd.github.inertia-preview+json",
     )
