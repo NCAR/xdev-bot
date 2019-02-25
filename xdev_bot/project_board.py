@@ -109,16 +109,16 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
             prefix = "/".join(note_items[-4:])
 
         elif _event_type == "pull":
-            # In html_url, pull requests are referred to as 'pull'
-            # API url uses `pulls` instead.
+            # https://developer.github.com/v3/pulls/#labels-assignees-and-milestones
+            # Every pull request is an issue, but not every issue is a pull request.
             p = note_items[-4:]
-            p[-2] = "pulls"
+            p[-2] = "issues"
             prefix = "/".join(p)
 
         _event_api_url = "https://api.github.com/repos/" + prefix
         # Assign card mover to issue or pull request
         print(f"Assigning user={card_mover} to {card_note}")
-        await gh.post(_event_api_url, data={"assignee": card_mover})
+        await gh.patch(_event_api_url, data={"assignee": card_mover})
 
     else:
         print(f"Couldn't determine event type for {card_note}")
