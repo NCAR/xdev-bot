@@ -32,6 +32,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
     created_at = event.data["project_card"]["created_at"]
     updated_at = event.data["project_card"]["updated_at"]
+    assignees = "octocat"
     entry = {
         "card_url": card_url,
         "card_id": card_id,
@@ -41,6 +42,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         "column_name": column_name,
         "created_at": created_at,
         "updated_at": updated_at,
+        "assigness": assignees,
     }
     temp_df = pd.DataFrame([entry])
     try:
@@ -63,6 +65,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
                 "card_url",
                 "created_at",
                 "updated_at",
+                "assignees",
             ]
             df = pd.DataFrame(columns=columns)
 
@@ -79,11 +82,36 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 
 @router.register("project_card", action="moved")
 async def project_card_moved_event(event, gh, *args, **kwargs):
+    """ Whenever a card is moved, assign card mover to the issue or pull request."""
+
+    card_mover = event.data["sender"]["login"]
     card_id = event.data["project_card"]["id"]
+    card_note = event.data["project_card"]["note"]
     column_url = event.data["project_card"]["column_url"]
     column_id = event.data["project_card"]["column_id"]
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
     updated_at = event.data["project_card"]["updated_at"]
+
+    # Determine if card's note is an issue
+    # or pull request html_url in the form
+    # 'https://github.com/org_or_user/repo_name/issues_or_pull/number'
+    note_items = card_note.split("/")
+
+    # This returns ['https:', '', 'github.com', 'org_or_user', 'repo_name', 'issues_or_pull', 'number']
+    # if note is a html_url to an issue or pull request, len(note_items) == 7
+    if len(note_items) == 7:
+        _event_type = note_items[-2]
+
+        if _event_type in {"pull", "issues"}:
+            # Construct Issue or PR API url
+            _event_api_url = "https://api.github.com/repos/" + "/".join(note_items[-4:])
+
+        # Assign card mover to issue or pull request
+        print(f"Assigning user={card_mover} to {card_note}")
+        await gh.post(_event_api_url, data={"assignee": card_mover})
+
+    else:
+        print(f"Couldn't determine event type for {card_note}")
 
     try:
         # If the databse file exists, open it in
@@ -98,11 +126,14 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
                 df.loc[df["card_id"] == card_id, "column_url"] = column_url
                 df.loc[df["card_id"] == card_id, "column_id"] = column_id
                 df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
+                df.loc[df["card_id"] == card_id, "assignees"] = card_mover
 
             with fs.open(DB, "w") as f:
                 print(f"Saving Database in {DB} S3 bucket")
                 print(df.head())
                 df.to_csv(f, index=True)
+
+            await gh.post()
 
         else:
             raise ValueError(f"Specified Database : {DB} does not exist")
