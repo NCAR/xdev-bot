@@ -91,6 +91,12 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     column_id = event.data["project_card"]["column_id"]
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
     updated_at = event.data["project_card"]["updated_at"]
+    
+  
+    with fs.open(DB, "r") as f:
+        print(f"Reading Existing Database from {DB} S3 bucket")
+        df = pd.read_csv(f, index_col=0)
+    assignees = set(df.loc[df["card_id"]==card_id]["assignees"])
 
     # Determine if card's note is an issue
     # or pull request html_url in the form
@@ -118,7 +124,14 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
         _event_api_url = "https://api.github.com/repos/" + prefix
         # Assign card mover to issue or pull request
         print(f"Assigning user={card_mover} to {card_note}")
-        await gh.patch(_event_api_url, data={"assignee": card_mover})
+        if _event_type == "issues":
+            if column_name == "done":
+                await gh.patch(_event_api_url,data={"state":"closed"})
+            elif column_name == "backlog":
+                await gh.patch(_event_api_url,data={"state":"open"})
+            elif column_name == "in_progress":
+                await gh.patch(_event_api_url, data={"assignee": card_mover})
+                assignees.add(card_mover)
 
     else:
         print(f"Couldn't determine event type for {card_note}")
@@ -136,7 +149,7 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
                 df.loc[df["card_id"] == card_id, "column_url"] = column_url
                 df.loc[df["card_id"] == card_id, "column_id"] = column_id
                 df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
-                df.loc[df["card_id"] == card_id, "assignees"] = card_mover
+                df.loc[df["card_id"] == card_id, "assignees"] = list(assignees)
 
             with fs.open(DB, "w") as f:
                 print(f"Saving Database in {DB} S3 bucket")
