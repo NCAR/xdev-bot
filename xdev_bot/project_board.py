@@ -42,7 +42,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         "column_name": column_name,
         "created_at": created_at,
         "updated_at": updated_at,
-        "assigness": assignees,
+        "assignees": assignees,
     }
     temp_df = pd.DataFrame([entry])
     try:
@@ -132,8 +132,6 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
                 print(f"Saving Database in {DB} S3 bucket")
                 print(df.head())
                 df.to_csv(f, index=True)
-
-            await gh.post()
 
         else:
             raise ValueError(f"Specified Database : {DB} does not exist")
