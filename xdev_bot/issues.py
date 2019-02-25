@@ -54,7 +54,7 @@ async def issue_closed_event(event, gh, *args, **kwargs):
             df = pd.read_csv(f, index_col=0)
 
         row = df["note"] == issue_url
-        card_id = df.loc[row].card_id
+        card_id = df.loc[row]["card_id"].values[0]
         df.loc[row]["updated_at"] = updated_at
 
         print(f"Updating database: move card {card_id} to done column")
