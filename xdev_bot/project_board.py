@@ -62,6 +62,7 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     
     df = read_database()
     assignees = set(df.loc[df["card_id"]==card_id]["assignees"])
+    assignees.add(card_mover)
 
     # Determine if card's note is an issue
     # or pull request html_url in the form
@@ -91,12 +92,11 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
         print(f"Assigning user={card_mover} to {card_note}")
         if _event_type == "issues":
             if column_name == "done":
-                await gh.patch(_event_api_url,data={"state":"closed"})
+                await gh.patch(_event_api_url,data={"state":"closed","assignees": assignees})
             elif column_name == "backlog":
                 await gh.patch(_event_api_url,data={"state":"open"})
             elif column_name == "in_progress":
-                await gh.patch(_event_api_url, data={"assignee": card_mover})
-                assignees.add(card_mover)
+                await gh.patch(_event_api_url, data={"state":"open","assignees": assignees})
 
     else:
         print(f"Couldn't determine event type for {card_note}")
@@ -105,5 +105,5 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     df.loc[df["card_id"] == card_id, "column_url"] = column_url
     df.loc[df["card_id"] == card_id, "column_id"] = column_id
     df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
-    df.loc[df["card_id"] == card_id, "assignees"].iloc[0] = list(assignees)
+    df.loc[df["card_id"] == card_id, "assignees"] = str(assignees)
     write_database(df)
