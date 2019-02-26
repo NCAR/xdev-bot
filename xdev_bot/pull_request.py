@@ -22,7 +22,9 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     in_progress_column_id = PROJECT_BOARD["columns"]["in_progress"]["id"]
     project_board_name = PROJECT_BOARD["name"]
     pull_request_url = event.data["pull_request"]["html_url"]
+    pull_request_api_url = event.data["pull_request"]["url"]
     labels_url = event.data["pull_request"]["labels_url"]
+    author = event.data["pull_request"]["user"]["login"]
     column_url = f"/projects/columns/{in_progress_column_id}/cards"
     print(
         f"Creating Card in {project_board_name} project board for pull request : {pull_request_url}"
@@ -34,6 +36,9 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     )
     # Mark new PRs as needing a review
     await gh.post(labels_url, data=["needs review"])
+
+    # Assigning PR author
+    await gh.patch(pull_request_api_url, data={"assignees":list(author))
 
 
 @router.register("pull_request", action="closed")
