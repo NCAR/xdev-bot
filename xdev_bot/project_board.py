@@ -63,7 +63,7 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     df = read_database()
     assignees = set(df.loc[df["card_id"]==card_id]["assignees"])
     assignees.add(card_mover)
-    assignees=str(assignees)
+    assignees=list(assignees)
 
     # Determine if card's note is an issue
     # or pull request html_url in the form
@@ -106,5 +106,5 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     df.loc[df["card_id"] == card_id, "column_url"] = column_url
     df.loc[df["card_id"] == card_id, "column_id"] = column_id
     df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
-    df.loc[df["card_id"] == card_id, "assignees"] = assignees
+    df.loc[df["card_id"] == card_id, "assignees"] = str(assignees)
     write_database(df)
