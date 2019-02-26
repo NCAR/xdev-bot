@@ -1,6 +1,6 @@
 """ Project Board related events """
 import gidgethub.routing
-from helpers import read_database, write_database
+from .helpers import read_database, write_database
 import pandas as pd
 router = gidgethub.routing.Router()
 

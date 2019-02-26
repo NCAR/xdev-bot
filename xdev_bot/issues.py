@@ -2,7 +2,7 @@
 import gidgethub.routing
 import pandas as pd
 import s3fs
-from helpers import read_database, write_database
+from .helpers import read_database, write_database
 
 from .project_board import PROJECT_BOARD
 
