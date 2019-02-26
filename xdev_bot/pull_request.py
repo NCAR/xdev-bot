@@ -16,6 +16,8 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
         - column = "In Progress"
    
     2) Mark new PRs as needing a review
+     
+    3) Assign PR's author to the PR
 
     """
 
