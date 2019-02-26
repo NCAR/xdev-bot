@@ -63,7 +63,7 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     
     
     df = read_database()
-    assignees = df.loc[df["card_id"]==card_id]["assignees"]
+    assignees = df.loc[df["card_id"]==card_id]["assignees"].values[0]
     assignees = ast.literal_eval(assignees)
     if assignees == ['octocat']:
         assignees = set()
