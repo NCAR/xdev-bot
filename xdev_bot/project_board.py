@@ -2,6 +2,8 @@
 import gidgethub.routing
 from .helpers import read_database, write_database
 import pandas as pd
+import ast
+
 router = gidgethub.routing.Router()
 
 
@@ -61,7 +63,9 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     
     
     df = read_database()
-    assignees = set(df.loc[df["card_id"]==card_id]["assignees"])
+    assignees = df.loc[df["card_id"]==card_id]["assignees"]
+    assignees = ast.literal_eval(assignees)
+    assignees = set(assignees)
     assignees.add(card_mover)
     assignees=list(assignees)
 
