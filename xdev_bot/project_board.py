@@ -1,15 +1,10 @@
 """ Project Board related events """
 import gidgethub.routing
+from helpers import read_database, write_database
 import pandas as pd
-import s3fs
-
 router = gidgethub.routing.Router()
 
-# Connect to S3 using default credentials
-fs = s3fs.S3FileSystem(anon=False)
 
-# Specify bucket/database file
-DB = "xdev-bot/database.csv"
 
 PROJECT_BOARD = {
     "name": "Backlog Queue",
@@ -45,39 +40,11 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         "assignees": assignees,
     }
     temp_df = pd.DataFrame([entry])
-    try:
-        # If the databse file exists, open it in
-        # a pandas dataframe
-        if fs.exists(DB):
-            with fs.open(DB, "r") as f:
-                print(f"Reading Existing Database from {DB} S3 bucket")
-                df = pd.read_csv(f, index_col=0)
-                print(df.head())
+    df = read_database()
+ 
+    df = pd.concat([temp_df, df], ignore_index=True, sort=False)
 
-        else:
-            # Create empty dataframe
-            columns = [
-                "column_name",
-                "column_id",
-                "column_url",
-                "note",
-                "card_id",
-                "card_url",
-                "created_at",
-                "updated_at",
-                "assignees",
-            ]
-            df = pd.DataFrame(columns=columns)
-
-        df = pd.concat([temp_df, df], ignore_index=True, sort=False)
-
-        with fs.open(DB, "w") as f:
-            print(f"Saving Database in {DB} S3 bucket")
-            print(df.head())
-            df.to_csv(f, index=True)
-
-    except Exception as exc:
-        raise exc
+    write_database(df)
 
 
 @router.register("project_card", action="moved")
@@ -92,10 +59,8 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
     updated_at = event.data["project_card"]["updated_at"]
     
-  
-    with fs.open(DB, "r") as f:
-        print(f"Reading Existing Database from {DB} S3 bucket")
-        df = pd.read_csv(f, index_col=0)
+    
+    df = read_database()
     assignees = set(df.loc[df["card_id"]==card_id]["assignees"])
 
     # Determine if card's note is an issue
@@ -136,28 +101,9 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     else:
         print(f"Couldn't determine event type for {card_note}")
 
-    try:
-        # If the databse file exists, open it in
-        # a pandas dataframe
-        if fs.exists(DB):
-            with fs.open(DB, "r") as f:
-                print(f"Reading Existing Database from {DB} S3 bucket")
-                df = pd.read_csv(f, index_col=0)
-                print(df.head())
-
-                df.loc[df["card_id"] == card_id, "column_name"] = column_name
-                df.loc[df["card_id"] == card_id, "column_url"] = column_url
-                df.loc[df["card_id"] == card_id, "column_id"] = column_id
-                df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
-                df.loc[df["card_id"] == card_id, "assignees"] = list(assignees)
-
-            with fs.open(DB, "w") as f:
-                print(f"Saving Database in {DB} S3 bucket")
-                print(df.head())
-                df.to_csv(f, index=True)
-
-        else:
-            raise ValueError(f"Specified Database : {DB} does not exist")
-
-    except Exception as exc:
-        raise exc
+    df.loc[df["card_id"] == card_id, "column_name"] = column_name
+    df.loc[df["card_id"] == card_id, "column_url"] = column_url
+    df.loc[df["card_id"] == card_id, "column_id"] = column_id
+    df.loc[df["card_id"] == card_id, "updated_at"] = updated_at
+    df.loc[df["card_id"] == card_id, "assignees"] = list(assignees)
+    write_database(df)
