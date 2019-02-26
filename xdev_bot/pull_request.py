@@ -38,7 +38,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     await gh.post(labels_url, data=["needs review"])
 
     # Assigning PR author
-    await gh.patch(pull_request_api_url, data={"assignees":list(author))
+    await gh.patch(pull_request_api_url, data={"assignees":list(author)})
 
 
 @router.register("pull_request", action="closed")
