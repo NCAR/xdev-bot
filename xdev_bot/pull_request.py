@@ -25,7 +25,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     project_board_name = PROJECT_BOARD["name"]
     pull_request_url = event.data["pull_request"]["html_url"]
     pull_request_api_url = event.data["pull_request"]["url"]
-    labels_url = event.data["pull_request"]["labels_url"]
+    labels_url = event.data["pull_request"]["base"]["labels_url"]
     author = event.data["pull_request"]["user"]["login"]
     column_url = f"/projects/columns/{in_progress_column_id}/cards"
     print(
