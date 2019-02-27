@@ -69,7 +69,10 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
         assignees = set()
     else:   
         assignees = set(assignees)
-    assignees.add(card_mover)
+    if card_mover == 'xdev-bot':
+        assignees = assignees
+    else:
+        assignees.add(card_mover)
     assignees=list(assignees)
 
     # Determine if card's note is an issue
