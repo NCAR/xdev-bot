@@ -42,7 +42,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     # Mark new PRs as needing a review
     # POST /repos/:owner/:repo/issues/:number/labels
 
-    await gh.post(issue_url, data={'labels': ['enhancement']})
+    await gh.post(issue_url, data={'labels': ['enhancement', 'needs-review']})
 
     # Assigning PR author
     await gh.patch(pull_request_api_url, data={'assignees': list(author)})
