@@ -2,6 +2,7 @@
 import gidgethub.routing
 from .helpers import read_database, write_database
 from .project_board import PROJECT_BOARD
+import ast
 
 router = gidgethub.routing.Router()
 
@@ -56,11 +57,13 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     - PR closed without merging
 
     When the PR is merged, move card from `In progress` column to
-     `Done` column of `Backlog Queue`
+     `Done` column of `Backlog Queue` and assigns label 'merged'
 
-    TODO: When the PR is closed without merging,
+     When the PR is closed without merging, move card again to 'Done'
+        column but assign label 'rejected'
+
+    TODO: When the PR is reopened, move column and change labels
     """
-  
 
     done_column_id = PROJECT_BOARD["columns"]["done"]["id"]
     project_board_name = PROJECT_BOARD["name"]
@@ -72,8 +75,8 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     card_id = df.loc[row]["card_id"].values[0]
 
     print(f"Updating database: move card {card_id} to done column")
-
     print(f"Closing Card in {project_board_name} project board for issue : {issue_url}")
+    
     # POST /projects/columns/cards/:card_id/moves
     url = f"/projects/columns/cards/{card_id}/moves"
     await gh.post(
@@ -82,8 +85,20 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
         accept="application/vnd.github.inertia-preview+json",
         )
 
+    labels = event.data["pull_request"]["labels"]
+    labels = ast.literal_eval(labels)
+    labels = set(labels)
+    if 'needs review' in labels:
+        labels.remove('needs review')
+    if 'rejected' in labels:
+        labels.remove('rejected')
+    if 'merged' in labels:
+        labels.remove('merged')
+
     merged = event.data['pull_request']["merged"]
     if merged:
-        await gh.post(issue_url, data={'labels': ['merged']})
+        labels.add('merged')
     else:
-        await gh.post(issue_url, data={'labels': ['rejected']})
+        labels.add('rejected')
+    labels = list(labels)
+    await gh.post(issue_url, data={'labels': labels})
