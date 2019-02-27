@@ -37,7 +37,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
         column_url, data={"note": pull_request_url}, accept="application/vnd.github.inertia-preview+json"
     )
     # Mark new PRs as needing a review
-    await gh.post(labels_url, data=["needs review"])
+    await gh.post(labels_url, data={"needs review"})
 
     # Assigning PR author
     await gh.patch(pull_request_api_url, data={"assignees":list(author)})
