@@ -85,9 +85,13 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
         accept="application/vnd.github.inertia-preview+json",
         )
 
-    labels = event.data["pull_request"]["labels"]
-    labels = set(labels)
+    dict_of_labels = event.data["pull_request"]["labels"]
+    labels = []
+    for item in dict_of_labels:
+        labels.append(item['name'])
     print(labels)
+    labels = set(labels)
+    
     if 'needs review' in labels:
         labels.remove('needs review')
 
