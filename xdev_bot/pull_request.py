@@ -6,44 +6,49 @@ from .project_board import PROJECT_BOARD
 router = gidgethub.routing.Router()
 
 
-@router.register("pull_request", action="opened")
+@router.register('pull_request', action='opened')
 async def pull_request_opened_event(event, gh, *args, **kwargs):
-    """ Whenever a PR is opened, 
-    
+    """ Whenever a PR is opened,
+
     1) create a card in:
 
         - project_board = "Backlog Queue"
         - column = "In Progress"
-   
+
     2) Mark new PRs as needing a review
-     
+
     3) Assign PR's author to the PR
 
     """
 
-    in_progress_column_id = PROJECT_BOARD["columns"]["in_progress"]["id"]
-    project_board_name = PROJECT_BOARD["name"]
-    pull_request_url = event.data["pull_request"]["html_url"]
-    pull_request_api_url = event.data["pull_request"]["url"]
-    labels_url = event.data["pull_request"]["base"]["repo"]["labels_url"]
-    author = event.data["pull_request"]["user"]["login"]
-    column_url = f"/projects/columns/{in_progress_column_id}/cards"
+    in_progress_column_id = PROJECT_BOARD['columns']['in_progress']['id']
+    project_board_name = PROJECT_BOARD['name']
+    pull_request_url = event.data['pull_request']['html_url']
+    pull_request_api_url = event.data['pull_request']['url']
+    issue_url = event.data['pull_request']['issue_url']
+    author = event.data['pull_request']['user']['login']
+    column_url = f'/projects/columns/{in_progress_column_id}/cards'
     print(
-        f"Creating Card in {project_board_name} project board for pull request : {pull_request_url}"
+        f'Creating Card in {project_board_name} project board for pull request : {pull_request_url}'
     )
 
     # POST /projects/columns/:column_id/cards
     await gh.post(
-        column_url, data={"note": pull_request_url}, accept="application/vnd.github.inertia-preview+json"
+        column_url,
+        data={'note': pull_request_url},
+        accept='application/vnd.github.inertia-preview+json',
     )
+
     # Mark new PRs as needing a review
-    await gh.post(labels_url, data=["test%20label"])
+    # POST /repos/:owner/:repo/issues/:number/labels
+
+    await gh.post(issue_url, data={'labels': ['enhancement']})
 
     # Assigning PR author
-    await gh.patch(pull_request_api_url, data={"assignees":list(author)})
+    await gh.patch(pull_request_api_url, data={'assignees': list(author)})
 
 
-@router.register("pull_request", action="closed")
+@router.register('pull_request', action='closed')
 async def pull_request_closed_event(event, gh, *args, **kwargs):
     """ Whenever a PR is closed, there are two scenarios:
 
