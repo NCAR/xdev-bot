@@ -92,8 +92,8 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     print(labels)
     labels = set(labels)
     
-    if 'needs review' in labels:
-        labels.remove('needs review')
+    if 'needs-review' in labels:
+        labels.remove('needs-review')
 
     merged = event.data['pull_request']["merged"]
     if merged:
