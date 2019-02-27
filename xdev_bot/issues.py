@@ -48,16 +48,16 @@ async def issue_closed_event(event, gh, *args, **kwargs):
     project_board_name = PROJECT_BOARD["name"]
 
     issue_url = event.data["issue"]["html_url"]
-    updated_at = event.data["issue"]["updated_at"]
+    #updated_at = event.data["issue"]["updated_at"]
     
     df = read_database()
 
     row = df["note"] == issue_url
     card_id = df.loc[row]["card_id"].values[0]
-    df.loc[row]["updated_at"] = updated_at
+    #df.loc[row]["updated_at"] = updated_at
 
     print(f"Updating database: move card {card_id} to done column")
-    write_database(df)
+    #write_database(df)
 
     print(f"Closing Card in {project_board_name} project board for issue : {issue_url}")
     # POST /projects/columns/cards/:card_id/moves
