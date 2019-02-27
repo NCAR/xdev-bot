@@ -86,14 +86,10 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
         )
 
     labels = event.data["pull_request"]["labels"]
-    labels = ast.literal_eval(labels)
     labels = set(labels)
+    print(labels)
     if 'needs review' in labels:
         labels.remove('needs review')
-    if 'rejected' in labels:
-        labels.remove('rejected')
-    if 'merged' in labels:
-        labels.remove('merged')
 
     merged = event.data['pull_request']["merged"]
     if merged:
@@ -101,4 +97,5 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     else:
         labels.add('rejected')
     labels = list(labels)
-    await gh.post(issue_url, data={'labels': labels})
+    print(labels)
+    await gh.patch(issue_url, data={'labels': labels})
