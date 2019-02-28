@@ -46,7 +46,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     await gh.post(issue_url, data={'labels': ['needs-review']})
 
     # Assigning PR author
-    await gh.patch(pull_request_api_url, data={'assignees': list(author)})
+    await gh.post(pull_request_api_url, data={'assignees': list(author)})
 
 
 @router.register('pull_request', action='closed')
@@ -89,7 +89,6 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     labels = []
     for item in dict_of_labels:
         labels.append(item['name'])
-    print(labels)
     labels = set(labels)
     
     if 'needs-review' in labels:
@@ -101,5 +100,4 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     else:
         labels.add('rejected')
     labels = list(labels)
-    print(labels)
     await gh.patch(issue_url, data={'labels': labels})
