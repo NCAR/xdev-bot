@@ -45,7 +45,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     await gh.post(issue_url, data={'labels': ['needs-review']})
 
     # Assigning PR author
-        note_items = card_note.split("/")
+    note_items = card_note.split("/")
 
     # This returns ['https:', '', 'github.com', 'org_or_user', 'repo_name', 'issues_or_pull', 'number']
     # if note is a html_url to an issue or pull request, len(note_items) == 7
