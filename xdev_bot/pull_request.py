@@ -46,7 +46,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     await gh.post(issue_url, data={'labels': ['needs-review']})
 
     # Assigning PR author
-    await gh.post(issue_url, data={'assignees': list(author)})
+    await gh.post(pull_request_url, data={'assignees': list(author)})
 
 
 @router.register('pull_request', action='closed')
