@@ -32,7 +32,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 
     if note.split('/')[5]=='issues':
         assignees = "['octocat']"
-    elif note.split('/')[5]=='pulls':
+    elif note.split('/')[5]=='pull':
         assignees = event.data['pull_request']['user']['login']
     entry = {
         "card_url": card_url,
