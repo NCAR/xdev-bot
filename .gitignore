@@ -105,3 +105,4 @@ venv.bak/
 notebooks/
 .vscode/
 .idea
+.DS_Store
