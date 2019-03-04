@@ -29,11 +29,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     column_name = PROJECT_BOARD["columns_reverse"][column_id]
     created_at = event.data["project_card"]["created_at"]
     updated_at = event.data["project_card"]["updated_at"]
-
-    if note.split('/')[5]=='issues':
-        assignees = "['octocat']"
-    elif note.split('/')[5]=='pull':
-        assignees = event.data['pull_request']['user']['login']
+    assignees = "['octocat']"
     entry = {
         "card_url": card_url,
         "card_id": card_id,
