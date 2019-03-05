@@ -2,16 +2,15 @@ name: xdev-bot
 channels:
   - conda-forge
 dependencies:
-  - python=3.6
   - codecov
-  - pytest==4.2.0
+  - pandas
   - pytest-cov
+  - pytest==4.2.0
+  - python=3.6
+  - s3fs
   - pip:
-      - gidgethub==3.1.0
       - aiohttp==3.5.4
       - cachetools==3.1.0
-      - pytest-asyncio==0.10.0
+      - gidgethub==3.1.0
       - pytest-aiohttp==0.3.0
-
-
-    
+      - pytest-asyncio==0.10.0
