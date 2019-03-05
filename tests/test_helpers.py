@@ -22,6 +22,7 @@ from xdev_bot.helpers import decipher_note
             'Is your type really arbitrary? If you know it is just going to be a int float or string you could just do',
             ('manual', 'N/A', 'N/A'),
         ),
+        ('https://blog.dask.org/2019/01/31/dask-mpi-experiment', ('manual', 'N/A', 'N/A')),
     ],
 )
 def test_decipher_note(note, expected):
