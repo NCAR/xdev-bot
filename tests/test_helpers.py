@@ -1,6 +1,7 @@
+import pandas as pd
 import pytest
 
-from xdev_bot.helpers import decipher_note
+from xdev_bot.helpers import decipher_note, read_database, write_database
 
 test_data = [
     (
@@ -27,3 +28,8 @@ test_data = [
 def test_decipher_note(note, expected):
     results = decipher_note(note)
     assert expected == results
+
+
+def test_read_database(DB='xdev-bot/test_database.csv'):
+    df = read_database(DB)
+    assert isinstance(df, pd.DataFrame)
