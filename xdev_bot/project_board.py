@@ -92,5 +92,9 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     df.loc[df['card_id'] == card_id, 'column_url'] = column_url
     df.loc[df['card_id'] == card_id, 'column_id'] = column_id
     df.loc[df['card_id'] == card_id, 'updated_at'] = updated_at
-    df.loc[df['card_id'] == card_id, 'assignees'] = ' '.join(assignees)
+    if assignees:
+        assignees = ' '.join(assignees)
+    else:
+        assignees = 'xdev-bot'
+    df.loc[df['card_id'] == card_id, 'assignees'] = assignees
     write_database(df)
