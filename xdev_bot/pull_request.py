@@ -38,12 +38,9 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
         accept='application/vnd.github.inertia-preview+json',
     )
 
-    # Mark new PRs as needing a review
+    # Mark new PRs as needing a review and assign PR author
     # POST /repos/:owner/:repo/issues/:number/labels
-    await gh.post(issue_url, data={'labels': ['needs-review']})
-
-    # Assigning PR author
-    await gh.post(issue_url, data={'assignees': list(author)})
+    await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': list(author)})
 
 
 @router.register('pull_request', action='closed')
