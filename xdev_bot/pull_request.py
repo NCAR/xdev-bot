@@ -40,7 +40,7 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
 
     # Mark new PRs as needing a review and assign PR author
     # POST /repos/:owner/:repo/issues/:number/labels
-    await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': list(author)})
+    await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': [author]})
 
 
 @router.register('pull_request', action='closed')
