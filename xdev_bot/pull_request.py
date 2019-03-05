@@ -1,8 +1,8 @@
 """ Pull requests events """
 import gidgethub.routing
+
 from .helpers import read_database, write_database
 from .project_board import PROJECT_BOARD
-import ast
 
 router = gidgethub.routing.Router()
 
@@ -24,7 +24,6 @@ async def pull_request_opened_event(event, gh, *args, **kwargs):
     in_progress_column_id = PROJECT_BOARD['columns']['in_progress']['id']
     project_board_name = PROJECT_BOARD['name']
     pull_request_url = event.data['pull_request']['html_url']
-    pull_request_api_url = event.data['pull_request']['url']
     issue_url = event.data['pull_request']['issue_url']
     author = event.data['pull_request']['user']['login']
     assignees = event.data['pull_request']['assignees']
@@ -64,36 +63,36 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
     TODO: When the PR is reopened, move column and change labels
     """
 
-    done_column_id = PROJECT_BOARD["columns"]["done"]["id"]
-    project_board_name = PROJECT_BOARD["name"]
+    done_column_id = PROJECT_BOARD['columns']['done']['id']
+    project_board_name = PROJECT_BOARD['name']
     issue_url = event.data['pull_request']['issue_url']
-    html_url = event.data["pull_request"]["html_url"] #note points to card_id
+    html_url = event.data['pull_request']['html_url']  # note points to card_id
 
     df = read_database()
-    row = df["note"] == html_url
-    card_id = df.loc[row]["card_id"].values[0]
+    row = df['note'] == html_url
+    card_id = df.loc[row]['card_id'].values[0]
 
-    print(f"Updating database: move card {card_id} to done column")
-    print(f"Closing Card in {project_board_name} project board for issue : {issue_url}")
-    
+    print(f'Updating database: move card {card_id} to done column')
+    print(f'Closing Card in {project_board_name} project board for issue : {issue_url}')
+
     # POST /projects/columns/cards/:card_id/moves
-    url = f"/projects/columns/cards/{card_id}/moves"
+    url = f'/projects/columns/cards/{card_id}/moves'
     await gh.post(
         url,
-        data={"position": "top", "column_id": done_column_id},
-        accept="application/vnd.github.inertia-preview+json",
-        )
+        data={'position': 'top', 'column_id': done_column_id},
+        accept='application/vnd.github.inertia-preview+json',
+    )
 
-    dict_of_labels = event.data["pull_request"]["labels"]
+    dict_of_labels = event.data['pull_request']['labels']
     labels = []
     for item in dict_of_labels:
         labels.append(item['name'])
     labels = set(labels)
-    
+
     if 'needs-review' in labels:
         labels.remove('needs-review')
 
-    merged = event.data['pull_request']["merged"]
+    merged = event.data['pull_request']['merged']
     if merged:
         labels.add('merged')
     else:
