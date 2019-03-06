@@ -8,6 +8,10 @@
 
 This is a GitHub bot for tracking and managing **Xdev Team** work. It runs on Heroku and uses the [@xdev-bot](https://github.com/xdev-bot) GitHub user.
 
+## Helpful Citations:
+
+- GitHub Events Documentation:  see https://developer.github.com/v3/activity/events/types/
+- Payload Examples: see https://github.com/NCAR/xdev-bot/tree/master/payloads_examples
 
 ## Deployment 
 
