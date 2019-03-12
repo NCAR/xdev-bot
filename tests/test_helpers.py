@@ -1,9 +1,13 @@
+import json
+import os
+
 import pandas as pd
 import pytest
 
-from xdev_bot.helpers import (decipher_note, read_database, update_database,
-                              write_database)
+from xdev_bot.helpers import (decipher_note, get_card_data, read_database,
+                              update_database, write_database)
 
+here = os.path.abspath(os.path.dirname(__file__))
 test_data = [
     (
         'https://github.com/NCAR/xdev-bot-testing/pull/62',
@@ -60,3 +64,13 @@ def test_update_database():
 
     with pytest.warns(UserWarning):
         temp_df = update_database(df, card_id=1000, column_name='done')
+
+
+def test_get_card_data():
+    card_payload_file = os.path.join(here, 'payloads_examples/card_moved.json')
+    with open(card_payload_file) as f:
+        event_data = json.load(f)
+
+    card_data = get_card_data(event_data)
+    assert isinstance(card_data, dict)
+    assert len(card_data) > 1

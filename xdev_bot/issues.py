@@ -1,8 +1,7 @@
 """ Issue related events"""
 import gidgethub.routing
 
-from .helpers import read_database, write_database
-from .project_board import PROJECT_BOARD
+from .helpers import PROJECT_BOARD, read_database, write_database
 
 router = gidgethub.routing.Router()
 
@@ -12,12 +11,12 @@ async def issue_opened_event(event, gh, *args, **kwargs):
     """ Whenever an issue is opened, create a card in
 
     - project_board = "Backlog Queue"
-    - column = "Backlog"
+    - column = "to_do"
     """
-    backlog_column_id = PROJECT_BOARD['columns']['backlog']['id']
+    to_do_column_id = PROJECT_BOARD['columns']['to_do']['id']
     project_board_name = PROJECT_BOARD['name']
     issue_url = event.data['issue']['html_url']
-    url = f'/projects/columns/{backlog_column_id}/cards'
+    url = f'/projects/columns/{to_do_column_id}/cards'
 
     print(f'Creating Card in {project_board_name} project board for issue : {issue_url}')
 
