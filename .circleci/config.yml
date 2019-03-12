@@ -3,7 +3,6 @@ workflows:
   version: 2
   default:
     jobs:
-      - test-3.6
       - test-3.7
 
 
@@ -30,18 +29,9 @@ default-job: &default-job
 
 jobs:
 
-  test-3.6:
-    <<: *default-job
-    environment:
-      ENV_NAME: "xdev-bot"
-      ENV_SCRIPT: "environment-3.6.yml"
-      CHECK_SCRIPT: "test-unit-coverage.sh"
-
   test-3.7:
     <<: *default-job
     environment:
       ENV_NAME: "xdev-bot"
       ENV_SCRIPT: "environment-3.7.yml"
       CHECK_SCRIPT: "test-unit-coverage.sh"
-
-  
