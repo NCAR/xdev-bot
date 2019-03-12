@@ -1,8 +1,7 @@
 """ Pull requests events """
 import gidgethub.routing
 
-from .helpers import read_database, write_database
-from .project_board import PROJECT_BOARD
+from .helpers import PROJECT_BOARD, read_database, write_database
 
 router = gidgethub.routing.Router()
 

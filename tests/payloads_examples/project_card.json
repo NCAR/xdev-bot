@@ -1,14 +1,36 @@
 {
     "action": "created",
-    "project_column": {
-      "url": "https://api.github.com/projects/columns/4500059",
+    "project_card": {
+      "url": "https://api.github.com/projects/columns/cards/17913946",
       "project_url": "https://api.github.com/projects/2209629",
-      "cards_url": "https://api.github.com/projects/columns/4500059/cards",
-      "id": 4500059,
-      "node_id": "MDEzOlByb2plY3RDb2x1bW40NTAwMDU5",
-      "name": "Reviewer approved",
-      "created_at": "2019-02-21T02:49:44Z",
-      "updated_at": "2019-02-21T02:49:44Z"
+      "column_url": "https://api.github.com/projects/columns/4500056",
+      "column_id": 4500056,
+      "id": 17913946,
+      "node_id": "MDExOlByb2plY3RDYXJkMTc5MTM5NDY=",
+      "note": ":sparkles: **Welcome to GitHub Projects** :sparkles:\nWe're so excited that you've decided to create a new project! Now that you're here, let's make sure you know how to get the most out of GitHub Projects.\n- [x] Create a new project\n- [x] Give your project a name\n- [ ] Press the <kbd>?</kbd> key to see available keyboard shortcuts\n- [ ] Add a new column\n- [ ] Drag and drop this card to the new column\n- [ ] Search for and add issues or PRs to your project\n- [ ] Manage automation on columns\n- [ ] [Archive a card](https://help.github.com/articles/archiving-cards-on-a-project-board/) or archive all cards in a column\n",
+      "archived": false,
+      "creator": {
+        "login": "andersy005",
+        "id": 13301940,
+        "node_id": "MDQ6VXNlcjEzMzAxOTQw",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/13301940?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/andersy005",
+        "html_url": "https://github.com/andersy005",
+        "followers_url": "https://api.github.com/users/andersy005/followers",
+        "following_url": "https://api.github.com/users/andersy005/following{/other_user}",
+        "gists_url": "https://api.github.com/users/andersy005/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/andersy005/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/andersy005/subscriptions",
+        "organizations_url": "https://api.github.com/users/andersy005/orgs",
+        "repos_url": "https://api.github.com/users/andersy005/repos",
+        "events_url": "https://api.github.com/users/andersy005/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/andersy005/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "created_at": "2019-02-21T02:49:45Z",
+      "updated_at": "2019-02-21T02:49:45Z"
     },
     "repository": {
       "id": 171775398,
