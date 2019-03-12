@@ -7,7 +7,7 @@ import s3fs
 fs = s3fs.S3FileSystem(anon=False)
 
 
-def read_database(DB='xdev-bot/database.csv'):
+def read_database(DB='xdev-bot/test_database.csv'):
     try:
         # If the databse file exists, open it in
         # a pandas dataframe
@@ -39,7 +39,7 @@ def read_database(DB='xdev-bot/database.csv'):
         raise exc
 
 
-def write_database(df, DB='xdev-bot/database.csv'):
+def write_database(df, DB='xdev-bot/test_database.csv'):
 
     with fs.open(DB, 'w') as f:
         print(f'Saving Database in {DB} S3 bucket')
