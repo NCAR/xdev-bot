@@ -136,6 +136,17 @@ def update_database(df, card_id, **kwargs):
 
 
 def get_card_data(event_data):
+    """ Function to retrieve data from a card event payload
+
+    Parameters
+    ----------
+    event_data : dict
+
+    Returns
+    -------
+    card_data : dict
+    """
+
     card_data = {}
     keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
     for key in keys:
