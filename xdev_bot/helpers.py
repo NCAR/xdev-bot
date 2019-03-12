@@ -1,3 +1,5 @@
+from warnings import warn
+
 import pandas as pd
 import s3fs
 
@@ -43,21 +45,21 @@ def write_database(df, DB='xdev-bot/database.csv'):
 
 
 def decipher_note(card_note):
-    # Determine if a card's note is an issue or PR
-    # from html_url in the form
-    # 'https://github.com/org_or_user/repo_name/issues_or_pull/number'
+    """ Determine if a card's note is an issue or PR from html_url in the form
+    'https://github.com/org_or_user/repo_name/issues_or_pull/number'
+
+     - Construct Issue or PR API url:
+        * Issue url: https://api.github.com/repos/NCAR/xdev-bot-testing/issues/2
+        * PR url: https://api.github.com/repos/NCAR/xdev-bot-testing/pulls/3
+    """
 
     note_items = card_note.split('/')
 
-    # This returns ['https:', '', 'github.com', 'org_or_user', 'repo_name', 'issues_or_pull', 'number']
-    # if note is a html_url to an issue or pull request, len(note_items) == 7
     if len(note_items) == 7:
         event_type = note_items[-2]
 
         if event_type in {'issues', 'pull'}:
-            # Construct Issue or PR API url
-            # * Issue url looks like https://api.github.com/repos/NCAR/xdev-bot-testing/issues/2
-            # * PR url looks like 'https://api.github.com/repos/NCAR/xdev-bot-testing/pulls/3'
+
             if event_type == 'issues':
                 prefix = '/'.join(note_items[-4:])
 
@@ -83,3 +85,38 @@ def decipher_note(card_note):
         repo = 'N/A'
 
     return event_type, issue_api_url, repo
+
+
+def update_database(df, card_id, **kwargs):
+    """ Function to update database
+    Parameters
+    ----------
+    df : pandas.DataFrame
+         dataframe containing database information
+    card_id : int
+          id of the card to update
+    kwargs :
+           keyword arguments corresponding to colum
+           that needs to be updated with the new value.
+    """
+
+    try:
+        df = df.copy()
+        columns = df.columns.tolist()
+        if card_id in df['card_id'].unique():
+            for key, value in kwargs.items():
+                if key in columns:
+                    df.loc[df['card_id'] == card_id, key] = value
+
+                else:
+                    raise ValueError(f'{key} is not in accepted columns: {columns}')
+        else:
+
+            warn(f'{card_id} is not found in database. {card_id} will be added to the database.')
+            values = kwargs.copy()
+            values['card_id'] = card_id
+            temp_df = pd.DataFrame(values, columns=df.columns, index=[0])
+            df = pd.concat([df, temp_df], ignore_index=True, sort=False)
+        return df
+    except Exception as exc:
+        raise exc

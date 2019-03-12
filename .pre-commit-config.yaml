@@ -10,13 +10,6 @@ repos:
     -   id: check-yaml
     -   id: double-quote-string-fixer
 
-
--   repo: https://github.com/ambv/black
-    rev: 18.9b0
-    hooks:
-    - id: black
-      args: ["--line-length", "100", "--skip-string-normalization"]
-
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:

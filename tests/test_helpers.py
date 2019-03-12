@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from xdev_bot.helpers import decipher_note, read_database, write_database
+from xdev_bot.helpers import (decipher_note, read_database, update_database,
+                              write_database)
 
 test_data = [
     (
@@ -33,3 +34,29 @@ def test_decipher_note(note, expected):
 def test_read_database(DB='xdev-bot/test_database.csv'):
     df = read_database(DB)
     assert isinstance(df, pd.DataFrame)
+
+
+def test_update_database():
+    columns = [
+        'column_name',
+        'column_id',
+        'column_url',
+        'note',
+        'card_id',
+        'card_url',
+        'created_at',
+        'updated_at',
+        'assignees',
+    ]
+    entry = {'card_id': [123], 'column_name': ['to-do']}
+    df = pd.DataFrame(entry, columns=columns)
+    temp_df = update_database(df, card_id=123, column_name='in-progress')
+    expected = 'in-progress'
+    results = temp_df.loc[temp_df['card_id'] == 123, 'column_name'].values[0]
+    assert expected == results
+
+    with pytest.raises(ValueError):
+        temp_df = update_database(df, card_id=123, column_='to-do')
+
+    with pytest.warns(UserWarning):
+        temp_df = update_database(df, card_id=1000, column_name='done')

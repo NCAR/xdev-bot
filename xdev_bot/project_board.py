@@ -2,7 +2,8 @@
 import gidgethub.routing
 import pandas as pd
 
-from .helpers import decipher_note, read_database, write_database
+from .helpers import (decipher_note, read_database, update_database,
+                      write_database)
 
 router = gidgethub.routing.Router()
 
@@ -88,13 +89,18 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
         elif column_name == 'in_progress':
             await gh.patch(issue_api_url, data={'state': 'open', 'assignees': assignees})
 
-    df.loc[df['card_id'] == card_id, 'column_name'] = column_name
-    df.loc[df['card_id'] == card_id, 'column_url'] = column_url
-    df.loc[df['card_id'] == card_id, 'column_id'] = column_id
-    df.loc[df['card_id'] == card_id, 'updated_at'] = updated_at
     if assignees:
         assignees = ' '.join(assignees)
     else:
         assignees = 'xdev-bot'
-    df.loc[df['card_id'] == card_id, 'assignees'] = assignees
+    df = update_database(
+        df=df,
+        card_id=card_id,
+        column_name=column_name,
+        column_url=column_url,
+        column_id=column_id,
+        updated_at=updated_at,
+        assignees=assignees,
+    )
+
     write_database(df)
