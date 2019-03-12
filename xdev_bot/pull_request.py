@@ -1,7 +1,8 @@
 """ Pull requests events """
 import gidgethub.routing
 
-from .helpers import PROJECT_BOARD, read_database, write_database
+from .helpers import (PROJECT_BOARD, get_issue_or_pr_data, read_database, update_assignees,
+                      write_database)
 
 router = gidgethub.routing.Router()
 
@@ -94,3 +95,12 @@ async def pull_request_closed_event(event, gh, *args, **kwargs):
         labels.add('rejected')
     labels = list(labels)
     await gh.patch(issue_url, data={'labels': labels})
+
+
+@router.register('pull_request', action='assigned')
+@router.register('pull_request', action='unassigned')
+async def pull_request_assigned_event(event, gh, *args, **kwargs):
+    data = get_issue_or_pr_data(event.data['pull_request'])
+    df = read_database()
+    df = update_assignees(data, df)
+    write_database(df)

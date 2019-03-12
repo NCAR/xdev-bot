@@ -18,6 +18,12 @@ PROJECT_BOARD = {
 
 
 def read_database(DB='xdev-bot/test_database.csv'):
+    """ Read database from S3
+    Parameters
+    ----------
+    DB : string, default: xdev-bot/test_database.csv
+        Specify database and S3 bucket to read from
+    """
     try:
         # If the databse file exists, open it in
         # a pandas dataframe
@@ -50,6 +56,14 @@ def read_database(DB='xdev-bot/test_database.csv'):
 
 
 def write_database(df, DB='xdev-bot/test_database.csv'):
+    """ Write database to S3 bucket
+    Parameters
+    ----------
+
+    df : pandas.DataFrame
+
+    DB : string, default: xdev-bot/test_database.csv
+    """
 
     with fs.open(DB, 'w') as f:
         print(f'Saving Database in {DB} S3 bucket')
@@ -155,3 +169,29 @@ def get_card_data(event_data):
     card_data['mover'] = event_data['sender']['login']
     card_data['column_name'] = PROJECT_BOARD['columns_reverse'][card_data['column_id']]
     return card_data
+
+
+def get_issue_or_pr_data(event_data):
+    """ Get some relevant data about an issue or a pull request"""
+    html_url = event_data['html_url']
+    assignees_ = event_data['assignees']
+    assignees = []
+    if len(assignees_) >= 1:
+        for assignee in assignees_:
+            assignees.append(assignee['login'])
+    else:
+        assignees = ['xdev-bot']
+
+    assignees = ' '.join(assignees)
+    data = {}
+    data['html_url'] = html_url
+    data['assignees'] = assignees
+    return data
+
+
+def update_assignees(data, df):
+    """ Update assignees in the database """
+    print(f'Updating assignees for {data["html_url"]} note with {data["assignees"]}')
+    row = df['note'] == data['html_url']
+    df.loc[row, 'assignees'] = data['assignees']
+    return df
