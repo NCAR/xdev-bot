@@ -6,6 +6,16 @@ import s3fs
 # Connect to S3 using default credentials
 fs = s3fs.S3FileSystem(anon=False)
 
+PROJECT_BOARD = {
+    'name': 'Backlog Queue',
+    'columns': {
+        'backlog': {'id': 4_507_386},
+        'in_progress': {'id': 4_507_392},
+        'done': {'id': 4_507_393},
+    },
+    'columns_reverse': {4_507_386: 'backlog', 4_507_392: 'in_progress', 4_507_393: 'done'},
+}
+
 
 def read_database(DB='xdev-bot/test_database.csv'):
     try:
@@ -30,7 +40,7 @@ def read_database(DB='xdev-bot/test_database.csv'):
                 'assignees',
                 'event_type',
                 'issue_api_url',
-                'repo'
+                'repo',
             ]
             df = pd.DataFrame(columns=columns)
         return df
@@ -123,3 +133,14 @@ def update_database(df, card_id, **kwargs):
         return df
     except Exception as exc:
         raise exc
+
+
+def get_card_data(event_data):
+    card_data = {}
+    keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
+    for key in keys:
+        card_data[key] = event_data['project_card'][key]
+    card_data['creator'] = event_data['project_card']['creator']['login']
+    card_data['mover'] = event_data['sender']['login']
+    card_data['column_name'] = PROJECT_BOARD['columns_reverse'][card_data['column_id']]
+    return card_data
