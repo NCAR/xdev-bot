@@ -2,7 +2,8 @@
 import gidgethub.routing
 import pandas as pd
 
-from .helpers import read_database, write_database
+from .helpers import (decipher_note, read_database, update_database,
+                      write_database)
 
 router = gidgethub.routing.Router()
 
@@ -28,7 +29,9 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     column_name = PROJECT_BOARD['columns_reverse'][column_id]
     created_at = event.data['project_card']['created_at']
     updated_at = event.data['project_card']['updated_at']
-    assignees = 'xdev-bot'  # Use xdev-bot as a placeholder
+    card_creator = event.data['project_card']['creator']['login']
+    event_type, issue_api_url, repo = decipher_note(note)
+
     entry = {
         'card_url': card_url,
         'card_id': card_id,
@@ -38,7 +41,10 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         'column_name': column_name,
         'created_at': created_at,
         'updated_at': updated_at,
-        'assignees': assignees,
+        'assignees': card_creator,
+        'event_type': event_type,
+        'issue_api_url': issue_api_url,
+        'repo': repo
     }
     temp_df = pd.DataFrame([entry])
     df = read_database()
@@ -76,46 +82,30 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
 
     assignees = list(assignees)
 
-    # Determine if card's note is an issue
-    # or pull request html_url in the form
-    # 'https://github.com/org_or_user/repo_name/issues_or_pull/number'
-    note_items = card_note.split('/')
+    event_type, issue_api_url, repo = decipher_note(card_note)
 
-    # This returns ['https:', '', 'github.com', 'org_or_user', 'repo_name', 'issues_or_pull', 'number']
-    # if note is a html_url to an issue or pull request, len(note_items) == 7
-    if len(note_items) == 7:
-        _event_type = note_items[-2]
+    # Assign card mover to issue or pull request
+    print(f'Assigning user={card_mover} to {card_note}')
+    if event_type == 'issues':
+        if column_name == 'done':
+            await gh.patch(issue_api_url, data={'state': 'closed', 'assignees': assignees})
+        elif column_name == 'backlog':
+            await gh.patch(issue_api_url, data={'state': 'open'})
+        elif column_name == 'in_progress':
+            await gh.patch(issue_api_url, data={'state': 'open', 'assignees': assignees})
 
-        # Construct Issue or PR API url
-        # * Issue url looks like https://api.github.com/repos/NCAR/xdev-bot-testing/issues/2
-        # * PR url looks like 'https://api.github.com/repos/NCAR/xdev-bot-testing/pulls/3'
-        if _event_type == 'issues':
-            prefix = '/'.join(note_items[-4:])
-
-        elif _event_type == 'pull':
-            # https://developer.github.com/v3/pulls/#labels-assignees-and-milestones
-            # Every pull request is an issue, but not every issue is a pull request.
-            p = note_items[-4:]
-            p[-2] = 'issues'
-            prefix = '/'.join(p)
-
-        _event_api_url = 'https://api.github.com/repos/' + prefix
-        # Assign card mover to issue or pull request
-        print(f'Assigning user={card_mover} to {card_note}')
-        if _event_type == 'issues':
-            if column_name == 'done':
-                await gh.patch(_event_api_url, data={'state': 'closed', 'assignees': assignees})
-            elif column_name == 'backlog':
-                await gh.patch(_event_api_url, data={'state': 'open'})
-            elif column_name == 'in_progress':
-                await gh.patch(_event_api_url, data={'state': 'open', 'assignees': assignees})
-
+    if assignees:
+        assignees = ' '.join(assignees)
     else:
-        print(f"Couldn't determine event type for {card_note}")
+        assignees = 'xdev-bot'
+    df = update_database(
+        df=df,
+        card_id=card_id,
+        column_name=column_name,
+        column_url=column_url,
+        column_id=column_id,
+        updated_at=updated_at,
+        assignees=assignees,
+    )
 
-    df.loc[df['card_id'] == card_id, 'column_name'] = column_name
-    df.loc[df['card_id'] == card_id, 'column_url'] = column_url
-    df.loc[df['card_id'] == card_id, 'column_id'] = column_id
-    df.loc[df['card_id'] == card_id, 'updated_at'] = updated_at
-    df.loc[df['card_id'] == card_id, 'assignees'] = ' '.join(assignees)
     write_database(df)
