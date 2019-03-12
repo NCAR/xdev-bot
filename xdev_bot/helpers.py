@@ -28,6 +28,9 @@ def read_database(DB='xdev-bot/database.csv'):
                 'created_at',
                 'updated_at',
                 'assignees',
+                'event_type',
+                'issue_api_url',
+                'repo'
             ]
             df = pd.DataFrame(columns=columns)
         return df
