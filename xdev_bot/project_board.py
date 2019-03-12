@@ -62,7 +62,7 @@ async def project_card_moved_event(event, gh, *args, **kwargs):
     if event_type == 'issues':
         if card_data['column_name'] == 'done':
             await gh.patch(issue_api_url, data={'state': 'closed', 'assignees': assignees})
-        elif card_data['column_name'] == 'backlog':
+        elif card_data['column_name'] == 'to_do':
             await gh.patch(issue_api_url, data={'state': 'open'})
         elif card_data['column_name'] == 'in_progress':
             await gh.patch(issue_api_url, data={'state': 'open', 'assignees': assignees})

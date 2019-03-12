@@ -9,11 +9,11 @@ fs = s3fs.S3FileSystem(anon=False)
 PROJECT_BOARD = {
     'name': 'Backlog Queue',
     'columns': {
-        'backlog': {'id': 4_507_386},
+        'to_do': {'id': 4_507_386},
         'in_progress': {'id': 4_507_392},
         'done': {'id': 4_507_393},
     },
-    'columns_reverse': {4_507_386: 'backlog', 4_507_392: 'in_progress', 4_507_393: 'done'},
+    'columns_reverse': {4_507_386: 'to_do', 4_507_392: 'in_progress', 4_507_393: 'done'},
 }
 
 
