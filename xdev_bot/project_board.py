@@ -30,6 +30,8 @@ async def project_card_created_event(event, gh, *args, **kwargs):
     created_at = event.data['project_card']['created_at']
     updated_at = event.data['project_card']['updated_at']
     card_creator = event.data['project_card']['creator']['login']
+    event_type, issue_api_url, repo = decipher_note(note)
+
     entry = {
         'card_url': card_url,
         'card_id': card_id,
@@ -40,6 +42,9 @@ async def project_card_created_event(event, gh, *args, **kwargs):
         'created_at': created_at,
         'updated_at': updated_at,
         'assignees': card_creator,
+        'event_type': event_type,
+        'issue_api_url': issue_api_url,
+        'repo': repo
     }
     temp_df = pd.DataFrame([entry])
     df = read_database()
