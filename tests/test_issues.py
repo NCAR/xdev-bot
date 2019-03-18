@@ -1,9 +1,12 @@
+import os
 import pytest
 import json
 
 from gidgethub import sansio
 
 from xdev_bot import issues
+
+PWD = os.path.abspath(os.path.dirname(__file__))
 
 
 class FakeGH:
@@ -35,7 +38,7 @@ class FakeGH:
 
 @pytest.mark.asyncio
 async def test_card_created_on_opened_issue():
-    with open('payload_examples/issue_opened.json') as f:
+    with open(os.path.join(PWD, 'payload_examples/issue_opened.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="pull_request", delivery_id="12345")
 
