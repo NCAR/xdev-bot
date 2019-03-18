@@ -1,7 +1,8 @@
 """ Issue related events"""
 import gidgethub.routing
 
-from .helpers import PROJECT_BOARD, read_database, write_database
+from .helpers import (PROJECT_BOARD, get_issue_or_pr_data, read_database, update_assignees,
+                      write_database)
 
 router = gidgethub.routing.Router()
 
@@ -54,7 +55,6 @@ async def issue_closed_event(event, gh, *args, **kwargs):
     if event.data['action'] == 'closed':
         done_column_id = PROJECT_BOARD['columns']['done']['id']
         print(f'Updating database: move card {card_id} to done column')
-        # write_database(df)
 
         print(f'Closing Card in {project_board_name} project board for issue : {issue_url}')
         # POST /projects/columns/cards/:card_id/moves
@@ -75,3 +75,12 @@ async def issue_closed_event(event, gh, *args, **kwargs):
             accept='application/vnd.github.inertia-preview+json',
         )
         print(f' Reopening card in {project_board_name} project board for issue : {issue_url}')
+
+
+@router.register('issues', action='assigned')
+@router.register('issues', action='unassigned')
+async def issue_assigned_event(event, gh, *args, **kwargs):
+    data = get_issue_or_pr_data(event.data['issue'])
+    df = read_database()
+    df = update_assignees(data, df)
+    write_database(df)
