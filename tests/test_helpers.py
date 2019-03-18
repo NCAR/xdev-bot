@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import pytest
 
-from xdev_bot.helpers import (decipher_note, get_card_data, read_database,
+from xdev_bot.helpers import (decipher_note, get_card_data, get_issue_or_pr_data, read_database,
                               update_database, write_database)
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -74,3 +74,15 @@ def test_get_card_data():
     card_data = get_card_data(event_data)
     assert isinstance(card_data, dict)
     assert len(card_data) > 1
+
+
+def test_get_issue_or_pr_data():
+    pr_payload_file = os.path.join(here, 'payloads_examples/pull_request.json')
+    issue_payload_file = os.path.join(here, 'payloads_examples/issue.json')
+    payloads = [(pr_payload_file, 'pull_request'), (issue_payload_file, 'issue')]
+
+    for payload in payloads:
+        with open(payload[0]) as f:
+            data = json.load(f)[payload[1]]
+            expected = get_issue_or_pr_data(data)
+            assert isinstance(expected, dict)
