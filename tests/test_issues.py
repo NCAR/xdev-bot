@@ -39,19 +39,21 @@ async def test_card_created_on_opened_issue():
         payload = json.load(f)
     event = sansio.Event(payload, event="pull_request", delivery_id="12345")
 
-    pr_data = {
-        "labels": [
-            {"name": "non-trivial"},
-        ]
-    }
+    # FILL THE REST IN HERE
 
-    gh = FakeGH(getitem=pr_data)
-    await issues.router.dispatch(event, gh)
-    patch_data = gh.patch_data
-    assert patch_data["state"] == "closed"
-
-    assert len(gh.post_url) == 2
-    assert gh.post_url[0] == 'https://api.github.com/org/repo/issues/123/labels'
-    assert gh.post_data[0] == ['invalid']
-    assert gh.post_url[1] == 'https://api.github.com/org/repo/issues/123/comments'
-    assert gh.post_data[1] == {'body': issues.INVALID_PR_COMMENT}
+    # pr_data = {
+    #     "labels": [
+    #         {"name": "non-trivial"},
+    #     ]
+    # }
+    #
+    # gh = FakeGH(getitem=pr_data)
+    # await issues.router.dispatch(event, gh)
+    # patch_data = gh.patch_data
+    # assert patch_data["state"] == "closed"
+    #
+    # assert len(gh.post_url) == 2
+    # assert gh.post_url[0] == 'https://api.github.com/org/repo/issues/123/labels'
+    # assert gh.post_data[0] == ['invalid']
+    # assert gh.post_url[1] == 'https://api.github.com/org/repo/issues/123/comments'
+    # assert gh.post_data[1] == {'body': issues.INVALID_PR_COMMENT}
