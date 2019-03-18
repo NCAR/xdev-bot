@@ -1,7 +1,7 @@
 """ Issue related events"""
 import gidgethub.routing
 
-from .helpers import PROJECT_BOARD, read_database, write_database
+from .helpers import PROJECT_BOARD, read_database
 
 router = gidgethub.routing.Router()
 
