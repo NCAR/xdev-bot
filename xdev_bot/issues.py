@@ -6,81 +6,54 @@ from .helpers import (PROJECT_BOARD, get_issue_or_pr_data, read_database, update
 
 router = gidgethub.routing.Router()
 
-
 @router.register('issues', action='opened')
-async def issue_opened_event(event, gh, *args, **kwargs):
-    """ Whenever an issue is opened, create a card in
-
-    - project_board = "Backlog Queue"
-    - column = "to_do"
-    """
-    to_do_column_id = PROJECT_BOARD['columns']['to_do']['id']
-    project_board_name = PROJECT_BOARD['name']
-    issue_url = event.data['issue']['html_url']
-    url = f'/projects/columns/{to_do_column_id}/cards'
-
-    print(f'Creating Card in {project_board_name} project board for issue : {issue_url}')
-
-    # POST /projects/columns/:column_id/cards
-    await gh.post(
-        url, data={'note': issue_url}, accept='application/vnd.github.inertia-preview+json'
-    )
-
-
 @router.register('issues', action='reopened')
 @router.register('issues', action='closed')
-async def issue_closed_event(event, gh, *args, **kwargs):
-    """
-    - find card associated with issue (get card ID)
-    - construct URL for card
-
-    1. Whenever an issue is closed:
-    - get column ID of "done" column
-    - retrieve updated_at from payload and update database
-    - update card information (new column ID)
-
-    2. Whenever an issue is reopened:
-    - get column ID of "in-progess" column
-    - update card information (new column ID)
-
-
-    """
-    issue_url = event.data['issue']['html_url']
+@router.register('pull_request', action='opened')
+@router.register('pull_request', action='closed')
+async def issue_event(event, gh, *args, **kwargs):
     project_board_name = PROJECT_BOARD['name']
-    df = read_database()
-    row = df['note'] == issue_url
-    card_id = df.loc[row]['card_id'].values[0]
-    url = f'/projects/columns/cards/{card_id}/moves'
-
-    if event.data['action'] == 'closed':
-        done_column_id = PROJECT_BOARD['columns']['done']['id']
-        print(f'Updating database: move card {card_id} to done column')
-
-        print(f'Closing Card in {project_board_name} project board for issue : {issue_url}')
-        # POST /projects/columns/cards/:card_id/moves
-
-        await gh.post(
-            url,
-            data={'position': 'top', 'column_id': done_column_id},
-            accept='application/vnd.github.inertia-preview+json',
-        )
+    html_url = event.data['issue']['html_url'] if 'issues' in event.data else event.data['pull_request']['html_url']
+    
+    if event.data['action'] == 'opened':
+        card_Action = 'Creating'
+        column_id = PROJECT_BOARD['columns']['to_do']['id']
+        url = f'/projects/columns/{column_id}/cards'
 
     else:
-        in_progress_column_id = PROJECT_BOARD['columns']['in_progress']['id']
-        print(f'Updating database: move card {card_id} to in-progress column')
+        df = read_database()
+        row = df['note'] == html_url
+        card_id = df.loc[row]['card_id'].values[0]
 
-        await gh.post(
-            url,
-            data={'position': 'top', 'column_id': in_progress_column_id},
-            accept='application/vnd.github.inertia-preview+json',
-        )
-        print(f' Reopening card in {project_board_name} project board for issue : {issue_url}')
+        if event.data['action'] == 'closed':
+            card_action = 'Closing'
+            column_id = PROJECT_BOARD['columns']['done']['id']
 
+        elif event.data['action'] == 'reopened':
+            card_action = 'Reopening'
+            column_id = PROJECT_BOARD['columns']['in_progress']['id']
+
+        url = f'/projects/columns/cards/{card_id}/moves'
+
+    if 'pull_request' in event.data: 
+        (labels,author) = label_pull_request()
+        await gh.patch(issue_url, data={'labels': labels, 'assignees': [author]})
+
+
+    await gh.post(
+        url,
+        data={'position': 'top', 'column_id': column_id},
+        accept='application/vnd.github.inertia-preview+json')
+    print(f' {card_action} card in {project_board_name} project board for issue : {html_url}')
 
 @router.register('issues', action='assigned')
 @router.register('issues', action='unassigned')
-async def issue_assigned_event(event, gh, *args, **kwargs):
-    data = get_issue_or_pr_data(event.data['issue'])
+@router.register('pull_request', action='assigned')
+@router.register('pull_request', action='unassigned')
+async def assignment_event(event, gh, *args, **kwargs):
+    if event.data[0] == 'issues': event = 'issue'
+    elif event.data[0] == 'pull_request': event = 'pull_request'
+    data = get_issue_or_pr_data(event.data[event])
     df = read_database()
     df = update_assignees(data, df)
     write_database(df)
