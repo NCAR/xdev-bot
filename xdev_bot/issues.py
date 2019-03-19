@@ -21,7 +21,7 @@ async def issue_event(event, gh, *args, **kwargs):
     if event.data['action'] == 'opened':
         card_Action = 'Creating'
         column_id = PROJECT_BOARD['columns']['to_do']['id']
-        url = f'/projects/columns/{to_do_column_id}/cards'
+        url = f'/projects/columns/{column_id}/cards'
     elif event.data['action'] == 'closed':
         card_action = 'Closing'
         column_id = PROJECT_BOARD['columns']['done']['id']
