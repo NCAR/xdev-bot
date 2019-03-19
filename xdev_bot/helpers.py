@@ -195,3 +195,27 @@ def update_assignees(data, df):
     row = df['note'] == data['html_url']
     df.loc[row, 'assignees'] = data['assignees']
     return df
+
+def label_pull_request():
+    issue_url = event.data['pull_request']['issue_url']
+
+    if event.data['action'] == 'opened': 
+        author = event.data['pull_request']['user']['login']
+        await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': [author]})
+    
+    if event.data['action'] == 'closed'
+        dict_of_labels = event.data['pull_request']['labels']
+        labels = []
+
+        for item in dict_of_labels: labels.append(item['name'])
+        labels = set(labels)
+
+        if 'needs-review' in labels: labels.remove('needs-review')
+
+        merged = event.data['pull_request']['merged']
+        if merged: labels.add('merged')
+        else: labels.add('rejected')
+        
+        labels = list(labels)
+        await gh.patch(issue_url, data={'labels': labels})
+    return;
