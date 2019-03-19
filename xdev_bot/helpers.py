@@ -203,7 +203,7 @@ def label_pull_request():
         author = event.data['pull_request']['user']['login']
         await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': [author]})
     
-    if event.data['action'] == 'closed'
+    if event.data['action'] == 'closed':
         dict_of_labels = event.data['pull_request']['labels']
         labels = []
 
