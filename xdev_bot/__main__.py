@@ -11,7 +11,7 @@ from gidgethub import routing, sansio
 
 from . import issues, project_board
 
-router = routing.Router(pull_request.router, issues.router, project_board.router)
+router = routing.Router(issues.router, project_board.router)
 cache = cachetools.LRUCache(maxsize=500)
 
 USER = "xdev-bot"
