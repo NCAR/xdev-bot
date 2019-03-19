@@ -35,7 +35,10 @@ async def issue_event(event, gh, *args, **kwargs):
 
         url = f'/projects/columns/cards/{card_id}/moves'
 
-    if 'pull_request' in event.data: label_pull_request()
+    if 'pull_request' in event.data: 
+        (labels,author) = label_pull_request()
+        await gh.patch(issue_url, data={'labels': labels},'assignees': [author]})
+
 
     await gh.post(
         url,

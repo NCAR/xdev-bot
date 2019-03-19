@@ -198,10 +198,10 @@ def update_assignees(data, df):
 
 def label_pull_request():
     issue_url = event.data['pull_request']['issue_url']
+    author = event.data['pull_request']['user']['login']
 
     if event.data['action'] == 'opened': 
-        author = event.data['pull_request']['user']['login']
-        await gh.patch(issue_url, data={'labels': ['needs-review'], 'assignees': [author]})
+        labels = ['needs-review']
     
     if event.data['action'] == 'closed':
         dict_of_labels = event.data['pull_request']['labels']
@@ -217,5 +217,4 @@ def label_pull_request():
         else: labels.add('rejected')
         
         labels = list(labels)
-        await gh.patch(issue_url, data={'labels': labels})
-    return;
+    return (labels,author);
