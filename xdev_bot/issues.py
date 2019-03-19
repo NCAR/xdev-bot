@@ -36,7 +36,7 @@ async def issue_event(event, gh, *args, **kwargs):
         url,
         data={'position': 'top', 'column_id': column_id},
         accept='application/vnd.github.inertia-preview+json')
-        print(f' {card_action} card in {project_board_name} project board for issue : {issue_url}')
+    print(f' {card_action} card in {project_board_name} project board for issue : {issue_url}')
 
 
 @router.register('issues', action='assigned')
