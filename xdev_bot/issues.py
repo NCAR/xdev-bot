@@ -15,9 +15,9 @@ router = gidgethub.routing.Router()
 async def issue_event(event, gh, *args, **kwargs):
     project_board_name = PROJECT_BOARD['name']
 
-    if event.data[0] == 'issues'
+    if event.data[0] == 'issues':
         html_url = event.data['issue']['html_url']
-    if event.data[0] == 'pull_request'
+    if event.data[0] == 'pull_request':
         issue_url = event.data['pull_request']['issue_url']
         html_url = event.data['pull_request']['html_url']
     
