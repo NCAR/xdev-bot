@@ -9,9 +9,9 @@ from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgethub import routing, sansio
 
-from . import issues, project_board
+from . import events
 
-router = routing.Router(issues.router, project_board.router)
+router = routing.Router(events.router)
 cache = cachetools.LRUCache(maxsize=500)
 
 
