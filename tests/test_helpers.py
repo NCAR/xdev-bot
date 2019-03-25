@@ -77,7 +77,7 @@ def test_get_card_data():
 
 
 def test_get_issue_or_pr_data():
-    pr_payload_file = os.path.join(here, 'payload_examples/pull_request.json')
+    pr_payload_file = os.path.join(here, 'payload_examples/pull_request_opened.json')
     issue_payload_file = os.path.join(here, 'payload_examples/issue_opened.json')
     payloads = [(pr_payload_file, 'pull_request'), (issue_payload_file, 'issue')]
 
