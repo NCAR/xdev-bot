@@ -32,8 +32,11 @@ class CardDB(object):
     def where(self, **values):
         df = self.dataframe
         for column in values:
-            value = values[column]
-            df = df[df[column] == value]
+            if column in df:
+                value = values[column]
+                df = df[df[column] == value]
+            else:
+                df = pd.DataFrame()
         return df.index
 
     def update(self, card, key='id'):

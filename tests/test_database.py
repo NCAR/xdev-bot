@@ -49,6 +49,8 @@ def test_where_in_card_db():
     assert set(idx) == {1}
     idx = cards.where(id=1111)
     assert set(idx) == set()
+    idx = cards.where(x=4)
+    assert set(idx) == set()
 
 
 def test_getitem_of_card_db():
