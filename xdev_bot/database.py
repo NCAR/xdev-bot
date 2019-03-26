@@ -17,8 +17,8 @@ class CardDB(object):
     def dataframe(self):
         return self._df
 
-    def append(self, **props):
-        self._df = self._df.append(props, ignore_index=True)
+    def append(self, card):
+        self._df = self._df.append(card, ignore_index=True)
 
     def where(self, **kwds):
         df = self._df
@@ -51,8 +51,8 @@ class S3CardDB(CardDB):
         except Exception:
             raise
 
-    def append(self, **props):
-        super().append(**props)
+    def append(self, card):
+        super().append(card)
         with self._s3.open(self._fn, 'w') as f:
             self._df.to_csv(f, index=False)
 
