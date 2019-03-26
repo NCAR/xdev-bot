@@ -25,9 +25,8 @@ class CardDB(object):
     def dataframe(self):
         return self._df
 
-    def append(self, *cards):
-        for card in cards:
-            self._df = self.dataframe.append(card, ignore_index=True, sort=True)
+    def append(self, card):
+        self._df = self.dataframe.append(card, ignore_index=True, sort=True)
 
     def where(self, **values):
         df = self.dataframe
