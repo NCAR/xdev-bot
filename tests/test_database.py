@@ -14,22 +14,36 @@ def test_init_card_db():
 
 def test_append_new_card():
     cards = CardDB()
+    assert len(cards) == 0
     card0 = {'a': 1, 'b': 'c', 'd': 4.5}
     cards.append(**card0)
     assert cards[0] == card0
+    assert len(cards) == 1
 
 
-def test_get_card_info_by_value():
+def test_cards_where():
     cards = CardDB()
-    card0 = {'a': 1, 'b': 'c', 'd': 4.5}
+    card0 = {'id': 345, 'a': 1, 'b': 'c', 'd': 4.5}
     cards.append(**card0)
-    card1 = {'a': 2, 'b': 'd', 'd': 5.6}
+    card1 = {'id': 475, 'a': 2, 'b': 'd', 'd': 5.6}
     cards.append(**card1)
-    card2 = {'a': 3, 'b': 'c', 'd': 7.3}
+    card2 = {'id': 821, 'a': 3, 'b': 'c', 'd': 7.3}
     cards.append(**card2)
     assert cards.where(b='c') == [card0, card2]
     assert cards.where(b='c', a=1) == [card0]
     assert len(cards) == 3
+
+
+def test_find_card():
+    cards = CardDB()
+    card0 = {'id': 345, 'a': 1, 'b': 'c', 'd': 4.5}
+    cards.append(**card0)
+    card1 = {'id': 475, 'a': 2, 'b': 'd', 'd': 5.6}
+    cards.append(**card1)
+    card2 = {'id': 821, 'a': 3, 'b': 'c', 'd': 7.3}
+    cards.append(**card2)
+    assert cards.find(id=345) == card0
+    assert cards.find(id=379) is None
 
 
 @pytest.fixture
