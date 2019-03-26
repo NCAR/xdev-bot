@@ -44,6 +44,7 @@ def s3fn():
 
 def test_init_s3_card_db(s3fn):
     cards = S3CardDB(s3fn)
+    assert not S3.exists(s3fn)
     card0 = {'a': 1, 'b': 'c', 'd': 4.5}
     cards.append(**card0)
     card1 = {'a': 2, 'b': 'd', 'd': 5.6}
@@ -55,3 +56,5 @@ def test_init_s3_card_db(s3fn):
     with S3.open(s3fn, 'r') as f:
         df = pd.read_csv(f)
     assert cards.dataframe.equals(df)
+    cards2 = S3CardDB(s3fn)
+    assert cards.dataframe.equals(cards2.dataframe)
