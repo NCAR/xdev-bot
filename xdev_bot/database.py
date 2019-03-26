@@ -43,7 +43,10 @@ class CardDB(object):
             raise KeyError(f'key {key} not in database')
         kwargs = {key: card[key]}
         idx = self.where(**kwargs)
-        self[idx] = card
+        if len(idx) == 0:
+            self.append(card)
+        else:
+            self[idx] = card
 
 
 class S3CardDB(CardDB):

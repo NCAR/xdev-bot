@@ -87,6 +87,18 @@ def test_update_card_in_db():
     assert cards[1] == card1b
 
 
+def test_update_card_not_in_db():
+    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
+    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
+    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
+    cards = CardDB(card0, card1, card2)
+    card1b = {'id': 5, 'a': 3, 'b': 'g', 'd': 6.3}
+    cards.update(card1b, key='id')
+    assert cards[1] == card1
+    assert len(cards) == 4
+    assert cards[3] == card1b
+
+
 @pytest.fixture
 def s3fn():
     fn = 'xdev-bot/test_database.csv'
