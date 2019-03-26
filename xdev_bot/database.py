@@ -20,14 +20,14 @@ class CardDB(object):
     def append(self, card):
         self._df = self._df.append(card, ignore_index=True)
 
-    def where(self, **kwds):
+    def where(self, **colvals):
         df = self._df
-        for k in kwds:
-            df = df.loc[df[k] == kwds[k]]
+        for k in colvals:
+            df = df.loc[df[k] == colvals[k]]
         return df.to_dict('records')
 
-    def find(self, **kwds):
-        cards = self.where(**kwds)
+    def find(self, **colvals):
+        cards = self.where(**colvals)
         if len(cards) == 0:
             return None
         elif len(cards) == 1:
