@@ -22,3 +22,4 @@ def test_get_card_info_by_value():
     card2 = {'a': 3, 'b': 'c', 'd': 7.3}
     cards.append(**card2)
     assert cards.where(b='c') == [card0, card2]
+    assert cards.where(b='c', a=1) == [card0]
