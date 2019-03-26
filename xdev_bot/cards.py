@@ -21,11 +21,11 @@ def get_card_properties(card_event):
 
 def move_card(issue_event, column='to_do', database=PROJECT_CARDS):
     issue_url = issue_event.data['issue']['html_url']
-    cards = database.where(note=issue_url)
-    if len(cards) == 0:
+    idx = database.where(note=issue_url)
+    if len(idx) == 0:
         return create_new_card(issue_event, column=column)
-    elif len(cards) == 1:
-        card_id = int(cards[0]['id'])
+    elif len(idx) == 1:
+        card_id = int(database[idx[0]]['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
         url = f'/projects/columns/cards/{card_id}/moves'
         data = {'position': 'top', 'column_id': column_id}

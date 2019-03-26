@@ -38,7 +38,6 @@ def test_get_card_properties():
 
 
 def test_move_card():
-    cards = CardDB()
     card = {'url': 'https://api.github.com/projects/columns/cards/18001901',
             'id': 18001901,
             'note': 'https://github.com/NCAR/xdev-bot-testing/issues/76',
@@ -49,13 +48,24 @@ def test_move_card():
             'creator': 'xdev-bot',
             'mover': 'xdev-bot',
             'column_name': 'to_do'}
-    cards.append(**card)
+    cards = CardDB(card)
 
     with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="issues", delivery_id="12345")
 
     url, data = move_card(event, column='done', database=cards)
-
     assert url == '/projects/columns/cards/18001901/moves'
     assert data == {'position': 'top', 'column_id': 4_507_393}
+
+
+def test_move_card_not_found():
+    cards = CardDB()
+
+    with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="issues", delivery_id="12345")
+
+    url, data = move_card(event, column='done', database=cards)
+    assert url == '/projects/columns/4507393/cards'
+    assert data == {'note': payload['issue']['html_url']}
