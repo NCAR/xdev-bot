@@ -8,15 +8,18 @@ class CardDB(object):
         self._df = pd.DataFrame(cards)
 
     def __getitem__(self, index):
-        cards = self._df.iloc[index]
+        cards = self.dataframe.iloc[index]
         if isinstance(cards, pd.DataFrame):
             cards = cards.to_dict('records')
             return cards[0] if len(cards) == 1 else cards
         else:
             return cards.to_dict()
 
+    def __setitem__(self, index, card):
+        self.dataframe.iloc[index] = [card[col] for col in self.dataframe.columns]
+
     def __len__(self):
-        return len(self._df)
+        return len(self.dataframe)
 
     @property
     def dataframe(self):
@@ -24,14 +27,21 @@ class CardDB(object):
 
     def append(self, *cards):
         for card in cards:
-            self._df = self._df.append(card, ignore_index=True, sort=True)
+            self._df = self.dataframe.append(card, ignore_index=True, sort=True)
 
     def where(self, **values):
-        df = self._df
+        df = self.dataframe
         for column in values:
             value = values[column]
             df = df[df[column] == value]
         return df.index
+
+    def update(self, card, key='id'):
+        if key not in self.dataframe:
+            raise KeyError(f'key {key} not in database')
+        kwargs = {key: card[key]}
+        idx = self.where(**kwargs)
+        self[idx] = card
 
 
 class S3CardDB(CardDB):
@@ -48,6 +58,11 @@ class S3CardDB(CardDB):
                 self._df = pd.DataFrame()
         except Exception:
             raise
+
+    def __setitem__(self, index, card):
+        super().__setitem__(index, card)
+        with self._s3.open(self._fn, 'w') as f:
+            self._df.to_csv(f, index=False)
 
     def append(self, *cards):
         super().append(*cards)
