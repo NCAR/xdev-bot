@@ -48,4 +48,4 @@ class S3CardDB(CardDB):
             self._df.to_csv(f, index=False)
 
 
-PROJECT_CARDS = S3CardDB('xdev-bot/test_database.csv')
+PROJECT_CARDS = S3CardDB('xdev-bot/database.csv')
