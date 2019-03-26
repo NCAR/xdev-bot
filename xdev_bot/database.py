@@ -4,11 +4,16 @@ import pandas as pd
 
 class CardDB(object):
 
-    def __init__(self):
-        self._df = pd.DataFrame()
+    def __init__(self, *cards):
+        self._df = pd.DataFrame(cards)
 
     def __getitem__(self, index):
-        return self._df.iloc[index].to_dict()
+        cards = self._df.iloc[index]
+        if isinstance(cards, pd.DataFrame):
+            cards = cards.to_dict('records')
+            return cards[0] if len(cards) == 1 else cards
+        else:
+            return cards.to_dict()
 
     def __len__(self):
         return len(self._df)
@@ -17,23 +22,16 @@ class CardDB(object):
     def dataframe(self):
         return self._df
 
-    def append(self, card):
-        self._df = self._df.append(card, ignore_index=True)
+    def append(self, *cards):
+        for card in cards:
+            self._df = self._df.append(card, ignore_index=True, sort=True)
 
-    def where(self, **colvals):
+    def where(self, **values):
         df = self._df
-        for k in colvals:
-            df = df.loc[df[k] == colvals[k]]
-        return df.to_dict('records')
-
-    def find(self, **colvals):
-        cards = self.where(**colvals)
-        if len(cards) == 0:
-            return None
-        elif len(cards) == 1:
-            return cards[0]
-        else:
-            raise KeyError('must specify unique keys')
+        for column in values:
+            value = values[column]
+            df = df[df[column] == value]
+        return df.index
 
 
 class S3CardDB(CardDB):
@@ -51,8 +49,8 @@ class S3CardDB(CardDB):
         except Exception:
             raise
 
-    def append(self, card):
-        super().append(card)
+    def append(self, *cards):
+        super().append(*cards)
         with self._s3.open(self._fn, 'w') as f:
             self._df.to_csv(f, index=False)
 
