@@ -106,6 +106,17 @@ def test_update_card_in_empty_db():
     assert cards[0] == card0
 
 
+def test_remove_card_in_db():
+    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
+    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
+    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
+    cards = CardDB(card0, card1, card2)
+    cards.remove(card1, key='id')
+    assert len(cards) == 2
+    assert cards[0] == card0
+    assert cards[1] == card2
+
+
 @pytest.fixture
 def s3fn():
     fn = 'xdev-bot/test_database.csv'

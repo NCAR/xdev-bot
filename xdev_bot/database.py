@@ -51,6 +51,18 @@ class CardDB(object):
         else:
             self[idx] = card
 
+    def remove(self, card, key='id'):
+        if len(self) == 0:
+            raise KeyError(f'cannot remove card from empty database')
+        if key not in self.dataframe:
+            raise KeyError(f'key {key} not in database')
+        kwargs = {key: card[key]}
+        idx = self.where(**kwargs)
+        if len(idx) == 0:
+            raise KeyError(f'card with key {card[key]} not found')
+        else:
+            self._df = self._df.drop(idx)
+
 
 class S3CardDB(CardDB):
 
