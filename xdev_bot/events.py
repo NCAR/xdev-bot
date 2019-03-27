@@ -1,6 +1,6 @@
 import gidgethub.routing
 
-from .cards import create_new_card, get_card_properties, move_card
+from .cards import create_new_card, get_card, move_card
 from .database import PROJECT_CARDS
 
 router = gidgethub.routing.Router()
@@ -16,8 +16,8 @@ async def issue_opened_event(event, gh, *args, **kwargs):
 
 @router.register('project_card', action='created')
 async def project_card_created(event, gh, *args, **kwargs):
-    card_properties = get_card_properties(event)
-    await PROJECT_CARDS.append(**card_properties)
+    card = get_card(event)
+    await PROJECT_CARDS.update(card, key='id')
 
 
 @router.register('issues', action='closed')
@@ -27,3 +27,8 @@ async def issue_closed_event(event, gh, *args, **kwargs):
                   data=data,
                   accept='application/vnd.github.inertia-preview+json')
 
+
+@router.register('project_card', action='moved')
+async def project_card_moved(event, gh, *args, **kwargs):
+    card = get_card(event)
+    await PROJECT_CARDS.update(card, key='id')
