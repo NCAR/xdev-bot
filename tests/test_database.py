@@ -99,6 +99,13 @@ def test_update_card_not_in_db():
     assert cards[3] == card1b
 
 
+def test_update_card_in_empty_db():
+    cards = CardDB()
+    card0 = {'id': 5, 'a': 3, 'b': 'g', 'd': 6.3}
+    cards.update(card0, key='id')
+    assert cards[0] == card0
+
+
 @pytest.fixture
 def s3fn():
     fn = 'xdev-bot/test_database.csv'
