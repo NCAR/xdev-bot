@@ -3,7 +3,7 @@ import json
 
 from gidgethub import sansio
 
-from xdev_bot.actions import (create_new_card, get_card, move_card, update_issue,
+from xdev_bot.actions import (create_card, get_card, move_card, update_issue,
                               card_is_issue, card_is_pull_request, get_event_type)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
@@ -52,7 +52,7 @@ def test_create_new_card():
     ghargs = GHArgs('/projects/columns/4507386/cards',
                     data={'note': payload['issue']['html_url']},
                     accept='application/vnd.github.inertia-preview+json')
-    assert create_new_card(event) == ghargs
+    assert create_card(event) == ghargs
 
 
 def test_move_card():
