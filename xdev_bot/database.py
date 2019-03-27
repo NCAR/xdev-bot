@@ -41,6 +41,7 @@ class CardDB(object):
     def update(self, card, key='id'):
         if len(self) == 0:
             self.append(card)
+            return
         if key not in self.dataframe:
             raise KeyError(f'key {key} not in database')
         kwargs = {key: card[key]}
