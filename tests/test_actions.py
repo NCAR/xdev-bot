@@ -3,7 +3,8 @@ import json
 
 from gidgethub import sansio
 
-from xdev_bot.cards import create_new_card, get_card, move_card, card_is_issue, card_is_pull_request
+from xdev_bot.actions import (create_new_card, get_card, move_card, update_issue,
+                              card_is_issue, card_is_pull_request, get_event_type)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
 
@@ -88,3 +89,28 @@ def test_move_card_not_found():
                     data={'note': payload['issue']['html_url']},
                     accept='application/vnd.github.inertia-preview+json')
     assert move_card(event, column='done', database=cards) == ghargs
+
+
+def test_get_event_type():
+    with open(os.path.join(PWD, 'payload_examples/issue_opened.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    assert get_event_type(event) == 'issue'
+
+    with open(os.path.join(PWD, 'payload_examples/pull_request_opened.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    assert get_event_type(event) == 'pull_request'
+
+
+def test_update_issue():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/issues/11'}
+
+    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11')
+    assert update_issue(card) == ghargs
+
+    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
+                    data={'state': 'open'})
+    assert update_issue(card, state='open') == ghargs

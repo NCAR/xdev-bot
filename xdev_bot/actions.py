@@ -22,20 +22,22 @@ def card_is_pull_request(card):
     return card['type'] == 'pull_request'
 
 
-def create_new_card(issue_event, column='to_do'):
+def create_new_card(issue_or_pr_event, column='to_do'):
     column_id = PROJECT_BOARD['column_ids'][column]
-    issue_url = issue_event.data['issue']['html_url']
+    event_type = get_event_type(issue_or_pr_event)
+    html_url = issue_or_pr_event.data[event_type]['html_url']
     url = f'/projects/columns/{column_id}/cards'
-    data = {'note': issue_url}
+    data = {'note': html_url}
     accept = 'application/vnd.github.inertia-preview+json'
     return GHArgs(url, data=data, accept=accept)
 
 
-def move_card(issue_event, column='to_do', database=PROJECT_CARDS):
-    issue_url = issue_event.data['issue']['html_url']
-    idx = database.where(note=issue_url)
+def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
+    event_type = get_event_type(issue_or_pr_event)
+    html_url = issue_or_pr_event.data[event_type]['html_url']
+    idx = database.where(note=html_url)
     if len(idx) == 0:
-        return create_new_card(issue_event, column=column)
+        return create_new_card(issue_or_pr_event, column=column)
     elif len(idx) == 1:
         card_id = int(database[idx[0]]['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
@@ -44,4 +46,23 @@ def move_card(issue_event, column='to_do', database=PROJECT_CARDS):
         accept = 'application/vnd.github.inertia-preview+json'
         return GHArgs(url, data=data, accept=accept)
     else:
-        raise KeyError(f'could not find unique project card for {issue_url}')
+        raise KeyError(f'could not find unique project card for {html_url}')
+
+
+def get_event_type(event):
+    if 'issue' in event.data:
+        return 'issue'
+    elif 'pull_request' in event.data:
+        return 'pull_request'
+    else:
+        return None
+
+
+def update_issue(card, state=None):
+    prefix = 'https://api.github.com/repos/'
+    suffix = '/'.join(card['note'].split('/')[-4:])
+    url = prefix + suffix
+    data = {}
+    if state:
+        data['state'] = state
+    return GHArgs(url, data=data)
