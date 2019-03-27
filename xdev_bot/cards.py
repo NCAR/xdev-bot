@@ -2,21 +2,31 @@ from .projectboard import PROJECT_BOARD
 from .database import PROJECT_CARDS
 
 
+def get_card(card_event):
+    keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
+    properties = {k: card_event.data['project_card'][k] for k in keys}
+    properties['creator'] = card_event.data['project_card']['creator']['login']
+    properties['mover'] = card_event.data['sender']['login']
+    properties['column_name'] = PROJECT_BOARD['column_ids'].inverse[properties['column_id']]
+    card_type = properties['note'].split('/')[-2]
+    properties['type'] = 'pull_request' if card_type == 'pull' else 'issue'
+    return properties
+
+
+def card_is_issue(card):
+    return card['type'] == 'issue'
+
+
+def card_is_pull_request(card):
+    return card['type'] == 'pull_request'
+
+
 def create_new_card(issue_event, column='to_do'):
     column_id = PROJECT_BOARD['column_ids'][column]
     issue_url = issue_event.data['issue']['html_url']
     url = f'/projects/columns/{column_id}/cards'
     data = {'note': issue_url}
     return url, data
-
-
-def get_card_properties(card_event):
-    keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
-    properties = {k: card_event.data['project_card'][k] for k in keys}
-    properties['creator'] = card_event.data['project_card']['creator']['login']
-    properties['mover'] = card_event.data['sender']['login']
-    properties['column_name'] = PROJECT_BOARD['column_ids'].inverse[properties['column_id']]
-    return properties
 
 
 def move_card(issue_event, column='to_do', database=PROJECT_CARDS):
