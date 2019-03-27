@@ -80,6 +80,7 @@ class S3CardDB(CardDB):
             raise
 
     def _save(self):
+        print(f'Updating database file {self._fn} on Amazon S3')
         with self._s3.open(self._fn, 'w') as f:
             self._df.to_csv(f, index=False)
 
