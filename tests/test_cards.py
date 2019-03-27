@@ -5,6 +5,7 @@ from gidgethub import sansio
 
 from xdev_bot.cards import create_new_card, get_card, move_card, card_is_issue, card_is_pull_request
 from xdev_bot.database import CardDB
+from xdev_bot.gidgethub import GHArgs
 
 PWD = os.path.abspath(os.path.dirname(__file__))
 
@@ -47,9 +48,10 @@ def test_create_new_card():
         payload = json.load(f)
     event = sansio.Event(payload, event="issues", delivery_id="12345")
 
-    url, data = create_new_card(event)
-    assert url == '/projects/columns/4507386/cards'
-    assert data == {'note': payload['issue']['html_url']}
+    ghargs = GHArgs('/projects/columns/4507386/cards',
+                    data={'note': payload['issue']['html_url']},
+                    accept='application/vnd.github.inertia-preview+json')
+    assert create_new_card(event) == ghargs
 
 
 def test_move_card():
@@ -69,9 +71,10 @@ def test_move_card():
         payload = json.load(f)
     event = sansio.Event(payload, event="issues", delivery_id="12345")
 
-    url, data = move_card(event, column='done', database=cards)
-    assert url == '/projects/columns/cards/18001901/moves'
-    assert data == {'position': 'top', 'column_id': 4_507_393}
+    ghargs = GHArgs('/projects/columns/cards/18001901/moves',
+                    data={'position': 'top', 'column_id': 4_507_393},
+                    accept='application/vnd.github.inertia-preview+json')
+    assert move_card(event, column='done', database=cards) == ghargs
 
 
 def test_move_card_not_found():
@@ -81,6 +84,7 @@ def test_move_card_not_found():
         payload = json.load(f)
     event = sansio.Event(payload, event="issues", delivery_id="12345")
 
-    url, data = move_card(event, column='done', database=cards)
-    assert url == '/projects/columns/4507393/cards'
-    assert data == {'note': payload['issue']['html_url']}
+    ghargs = GHArgs('/projects/columns/4507393/cards',
+                    data={'note': payload['issue']['html_url']},
+                    accept='application/vnd.github.inertia-preview+json')
+    assert move_card(event, column='done', database=cards) == ghargs

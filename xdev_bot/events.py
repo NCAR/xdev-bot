@@ -8,10 +8,8 @@ router = gidgethub.routing.Router()
 
 @router.register('issues', action='opened')
 async def issue_opened_event(event, gh, *args, **kwargs):
-    url, data = create_new_card(event)
-    await gh.post(url,
-                  data=data,
-                  accept='application/vnd.github.inertia-preview+json')
+    ghargs = create_new_card(event)
+    await gh.post(ghargs.url, **ghargs.kwargs)
 
 
 @router.register('project_card', action='created')
@@ -22,10 +20,8 @@ async def project_card_created(event, gh, *args, **kwargs):
 
 @router.register('issues', action='closed')
 async def issue_closed_event(event, gh, *args, **kwargs):
-    url, data = move_card(event, column='done')
-    await gh.post(url,
-                  data=data,
-                  accept='application/vnd.github.inertia-preview+json')
+    ghargs = move_card(event, column='done')
+    await gh.post(ghargs.url, **ghargs.kwargs)
 
 
 @router.register('project_card', action='moved')
