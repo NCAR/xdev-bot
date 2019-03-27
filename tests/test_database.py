@@ -146,6 +146,7 @@ def test_init_s3_card_db(s3fn):
     cards.append(card1)
     cards.append(card2)
     assert len(cards) == 3
+    cards.remove(card1)
     assert S3.exists(s3fn)
     with S3.open(s3fn, 'r') as f:
         df = pd.read_csv(f)
