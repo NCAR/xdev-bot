@@ -29,6 +29,7 @@ def create_card(issue_or_pr_event, column='to_do'):
     url = f'/projects/columns/{column_id}/cards'
     data = {'note': html_url}
     accept = 'application/vnd.github.inertia-preview+json'
+    print(f'Creating {event_type} card in column {column}: {data["note"]}')
     return GHArgs(url, data=data, accept=accept)
 
 
@@ -39,11 +40,13 @@ def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
     if len(idx) == 0:
         return create_card(issue_or_pr_event, column=column)
     elif len(idx) == 1:
-        card_id = int(database[idx[0]]['id'])
+        card = database[idx[0]]
+        card_id = int(card['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
         url = f'/projects/columns/cards/{card_id}/moves'
         data = {'position': 'top', 'column_id': column_id}
         accept = 'application/vnd.github.inertia-preview+json'
+        print(f'Moving {event_type} card to column {column}: {card["note"]}')
         return GHArgs(url, data=data, accept=accept)
     else:
         raise KeyError(f'could not find unique project card for {html_url}')
@@ -65,4 +68,5 @@ def update_issue(card, state=None):
     data = {}
     if state:
         data['state'] = state
+        print(f'Updating issue status to {state}: {card["note"]}')
     return GHArgs(url, data=data)

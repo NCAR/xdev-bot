@@ -61,7 +61,7 @@ class CardDB(object):
         if len(idx) == 0:
             raise KeyError(f'card with key {key} {card[key]} not found')
         else:
-            self._df = self._df.drop(idx)
+            self._df = self._df.drop(idx).reset_index(drop=True)
 
 
 class S3CardDB(CardDB):
@@ -79,15 +79,22 @@ class S3CardDB(CardDB):
         except Exception:
             raise
 
-    def __setitem__(self, index, card):
-        super().__setitem__(index, card)
+    def _save(self):
+        print(f'Updating database file {self._fn} on Amazon S3')
         with self._s3.open(self._fn, 'w') as f:
             self._df.to_csv(f, index=False)
 
+    def __setitem__(self, index, card):
+        super().__setitem__(index, card)
+        self._save()
+
     def append(self, *cards):
         super().append(*cards)
-        with self._s3.open(self._fn, 'w') as f:
-            self._df.to_csv(f, index=False)
+        self._save()
+
+    def remove(self, card, key='id'):
+        super().remove(card, key=key)
+        self._save()
 
 
 PROJECT_CARDS = S3CardDB('xdev-bot/database.csv')
