@@ -47,3 +47,8 @@ async def project_card_moved(event, gh, *args, **kwargs):
         ghargs = update_issue(card, state=state)
         await gh.patch(ghargs.url, **ghargs.kwargs)
 
+
+@router.register('project_card', action='deleted')
+async def project_card_created(event, gh, *args, **kwargs):
+    card = get_card(event)
+    PROJECT_CARDS.remove(card, key='id')
