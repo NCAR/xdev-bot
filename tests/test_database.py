@@ -117,6 +117,15 @@ def test_remove_card_in_db():
     assert cards[1] == card2
 
 
+def test_remove_card_not_in_db():
+    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
+    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
+    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
+    cards = CardDB(card0, card1)
+    with pytest.raises(KeyError):
+        cards.remove(card2, key='id')
+
+
 @pytest.fixture
 def s3fn():
     fn = 'xdev-bot/test_database.csv'

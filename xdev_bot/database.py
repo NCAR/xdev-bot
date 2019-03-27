@@ -59,7 +59,7 @@ class CardDB(object):
         kwargs = {key: card[key]}
         idx = self.where(**kwargs)
         if len(idx) == 0:
-            raise KeyError(f'card with key {card[key]} not found')
+            raise KeyError(f'card with key {key} {card[key]} not found')
         else:
             self._df = self._df.drop(idx)
 
