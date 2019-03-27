@@ -8,6 +8,7 @@ dependencies:
   - pytest==4.2.0
   - python=3.6
   - s3fs
+  - bidict
   - pip:
       - aiohttp==3.5.4
       - cachetools==3.1.0

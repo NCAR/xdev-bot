@@ -9,12 +9,10 @@ from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgethub import routing, sansio
 
-from . import issues, project_board
+from . import events
 
-router = routing.Router(issues.router, project_board.router)
+router = routing.Router(events.router)
 cache = cachetools.LRUCache(maxsize=500)
-
-USER = "xdev-bot"
 
 
 async def main(request):
@@ -22,6 +20,7 @@ async def main(request):
 
         body = await request.read()
 
+        user = os.environ.get("GH_USER")
         secret = os.environ.get("GH_SECRET")
         oauth_token = os.environ.get("GH_AUTH")
 
@@ -31,7 +30,7 @@ async def main(request):
             return web.Response(status=200)
 
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, USER, oauth_token=oauth_token, cache=cache)
+            gh = gh_aiohttp.GitHubAPI(session, user, oauth_token=oauth_token, cache=cache)
             await asyncio.sleep(1)
             await router.dispatch(event, gh)
 
