@@ -21,7 +21,7 @@ async def pr_opened_event(event, gh, *args, **kwargs):
 @router.register('project_card', action='created')
 async def project_card_created(event, gh, *args, **kwargs):
     card = get_card(event)
-    await PROJECT_CARDS.update(card, key='id')
+    PROJECT_CARDS.update(card, key='id')
 
 
 @router.register('issues', action='closed')
@@ -34,7 +34,7 @@ async def issue_or_pr_closed_event(event, gh, *args, **kwargs):
 @router.register('project_card', action='moved')
 async def project_card_moved(event, gh, *args, **kwargs):
     card = get_card(event)
-    await PROJECT_CARDS.update(card, key='id')
+    PROJECT_CARDS.update(card, key='id')
     if card_is_issue(card):
         state = 'closed' if card['column_name'] == 'done' else 'open'
         ghargs = update_issue(card, state=state)
