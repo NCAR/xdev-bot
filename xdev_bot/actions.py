@@ -22,7 +22,7 @@ def card_is_pull_request(card):
     return card['type'] == 'pull_request'
 
 
-def create_new_card(issue_or_pr_event, column='to_do'):
+def create_card(issue_or_pr_event, column='to_do'):
     column_id = PROJECT_BOARD['column_ids'][column]
     event_type = get_event_type(issue_or_pr_event)
     html_url = issue_or_pr_event.data[event_type]['html_url']
@@ -37,7 +37,7 @@ def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
     html_url = issue_or_pr_event.data[event_type]['html_url']
     idx = database.where(note=html_url)
     if len(idx) == 0:
-        return create_new_card(issue_or_pr_event, column=column)
+        return create_card(issue_or_pr_event, column=column)
     elif len(idx) == 1:
         card_id = int(database[idx[0]]['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
