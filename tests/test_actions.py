@@ -5,7 +5,7 @@ from gidgethub import sansio
 
 from xdev_bot.actions import (create_card, get_card, move_card, update_issue,
                               card_is_issue, card_is_pull_request, get_event_type)
-from xdev_bot.database import CardDB
+from xdev_bot.database2 import CardDB
 from xdev_bot.gidgethub import GHArgs
 
 PWD = os.path.abspath(os.path.dirname(__file__))
@@ -66,7 +66,7 @@ def test_move_card():
             'creator': 'xdev-bot',
             'mover': 'xdev-bot',
             'column_name': 'to_do'}
-    cards = CardDB(card)
+    cards = CardDB(card, index='note')
 
     with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
         payload = json.load(f)
@@ -79,7 +79,7 @@ def test_move_card():
 
 
 def test_move_card_not_found():
-    cards = CardDB()
+    cards = CardDB(index='note')
 
     with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
         payload = json.load(f)
