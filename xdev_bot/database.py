@@ -40,7 +40,7 @@ class CardDB(object):
             self._save()
 
     def remove(self, card):
-        if self._index not in card or self[card[self._index]] != card:
+        if self._index not in card or self[card[self._index]] is None:
             raise KeyError(f'Card {card} not found in database')
         idx = self._df[self._df[self._index] == card[self._index]].index
         self._df = self._df.drop(idx).reset_index(drop=True)
