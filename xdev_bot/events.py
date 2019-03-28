@@ -1,7 +1,7 @@
 import gidgethub.routing
 
 from .actions import create_card, get_card, move_card, card_is_issue, update_issue
-from .database2 import PROJECT_CARDS
+from .database import PROJECT_CARDS
 
 router = gidgethub.routing.Router()
 

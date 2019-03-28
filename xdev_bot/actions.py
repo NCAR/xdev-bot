@@ -1,5 +1,5 @@
 from .projectboard import PROJECT_BOARD
-from .database2 import PROJECT_CARDS
+from .database import PROJECT_CARDS
 from .gidgethub import GHArgs
 
 

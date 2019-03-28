@@ -5,7 +5,7 @@ from gidgethub import sansio
 
 from xdev_bot.actions import (create_card, get_card, move_card, update_issue,
                               card_is_issue, card_is_pull_request, get_event_type)
-from xdev_bot.database2 import CardDB
+from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
 
 PWD = os.path.abspath(os.path.dirname(__file__))
