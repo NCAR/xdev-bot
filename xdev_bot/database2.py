@@ -30,3 +30,9 @@ class CardDB(object):
         else:
             idx = self._df[self._df[self._index] == card[self._index]].index
             self._df.iloc[idx] = [card[col] for col in self._df.columns]
+
+    def remove(self, card):
+        if self._index not in card or self[card[self._index]] != card:
+            raise KeyError(f'Card {card} not found in database')
+        idx = self._df[self._df[self._index] == card[self._index]].index
+        self._df = self._df.drop(idx).reset_index(drop=True)
