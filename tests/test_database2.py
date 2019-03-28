@@ -86,6 +86,8 @@ def test_remove():
 
 def test_s3_backend():
     s3fn = 'xdev-bot/test_database.csv'
+    if S3FS.exists(s3fn):
+        S3FS.rm(s3fn)
     cards = CardDB(index='id', s3filename=s3fn)
     assert not S3FS.exists(s3fn)
     card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
@@ -102,3 +104,5 @@ def test_s3_backend():
     assert cards._df.equals(df)
     cards2 = CardDB(index='id', s3filename=s3fn)
     assert cards._df.equals(cards2._df)
+    if S3FS.exists(s3fn):
+        S3FS.rm(s3fn)
