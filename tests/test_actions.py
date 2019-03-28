@@ -12,7 +12,7 @@ PWD = os.path.abspath(os.path.dirname(__file__))
 
 
 def test_get_card():
-    with open(os.path.join(PWD, 'payload_examples/card_created.json')) as f:
+    with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
@@ -27,6 +27,25 @@ def test_get_card():
             'sender': 'xdev-bot',
             'column_name': 'to_do',
             'type': 'issue'}
+    assert get_card(event) == card
+
+
+def test_get_card_for_other_note():
+    with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    card = {'url': 'https://api.github.com/projects/columns/cards/18001901',
+            'id': 18001901,
+            'note': 'Just some text',
+            'column_url': 'https://api.github.com/projects/columns/4507386',
+            'column_id': 4507386,
+            'created_at': '2019-02-22T20:42:18Z',
+            'updated_at': '2019-02-22T20:42:18Z',
+            'creator': 'xdev-bot',
+            'sender': 'xdev-bot',
+            'column_name': 'to_do',
+            'type': 'other'}
     assert get_card(event) == card
 
 

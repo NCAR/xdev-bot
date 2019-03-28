@@ -9,9 +9,16 @@ def get_card(card_event):
     card['creator'] = card_event.data['project_card']['creator']['login']
     card['sender'] = card_event.data['sender']['login']
     card['column_name'] = PROJECT_BOARD['column_ids'].inverse[card['column_id']]
-    card_type = card['note'].split('/')[-2]
-    card['type'] = 'pull_request' if card_type == 'pull' else 'issue'
+    card['type'] = get_note_type(card['note'])
     return card
+
+
+def get_note_type(note):
+    if note.startswith('https://github.com/'):
+        note_t = note.split('/')[-2]
+        return 'pull_request' if note_t == 'pull' else 'issue'
+    else:
+        return 'other'
 
 
 def card_is_issue(card):
