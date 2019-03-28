@@ -1,100 +1,67 @@
 import s3fs
 import pandas as pd
 
+S3FS = s3fs.S3FileSystem(anon=False)
+
 
 class CardDB(object):
+    """Database for cards on the project board"""
 
-    def __init__(self, *cards):
-        self._df = pd.DataFrame(cards)
-
-    def __getitem__(self, index):
-        cards = self.dataframe.iloc[index]
-        if isinstance(cards, pd.DataFrame):
-            cards = cards.to_dict('records')
-            return cards[0] if len(cards) == 1 else cards
-        else:
-            return cards.to_dict()
-
-    def __setitem__(self, index, card):
-        self.dataframe.iloc[index] = [card[col] for col in self.dataframe.columns]
+    def __init__(self, *cards, index=None, s3filename=None):
+        if index is None:
+            raise IndexError(f'Must set an unique index column name')
+        self._index = index
+        self._s3fn = s3filename
+        self._df = self._read() if s3filename else pd.DataFrame()
+        for card in cards:
+            self.add(card)
 
     def __len__(self):
-        return len(self.dataframe)
+        return len(self._df)
 
-    @property
-    def dataframe(self):
-        return self._df
-
-    def append(self, card):
-        self._df = self.dataframe.append(card, ignore_index=True, sort=True)
-
-    def where(self, **values):
-        df = self.dataframe
-        for column in values:
-            if column in df:
-                value = values[column]
-                df = df[df[column] == value]
-            else:
-                df = pd.DataFrame()
-        return df.index
-
-    def update(self, card, key='id'):
-        if len(self) == 0:
-            self.append(card)
-            return
-        if key not in self.dataframe:
-            raise KeyError(f'key {key} not in database')
-        kwargs = {key: card[key]}
-        idx = self.where(**kwargs)
-        if len(idx) == 0:
-            self.append(card)
+    def __getitem__(self, item):
+        if len(self._df) == 0:
+            return None
+        elif self._index in self._df:
+            df = self._df[self._df[self._index] == item]
+            return df.iloc[0].to_dict() if len(df) == 1 else None
         else:
-            self[idx] = card
+            raise IndexError(f'Index {self._index} not found in database')
 
-    def remove(self, card, key='id'):
-        if len(self) == 0:
-            raise KeyError(f'cannot remove card from empty database')
-        if key not in self.dataframe:
-            raise KeyError(f'key {key} not in database')
-        kwargs = {key: card[key]}
-        idx = self.where(**kwargs)
-        if len(idx) == 0:
-            raise KeyError(f'card with key {key} {card[key]} not found')
+    def add(self, card):
+        if self._index not in card:
+            raise IndexError(f'Index {self._index} not present in card {card}')
+        elif self[card[self._index]] is None:
+            self._df = self._df.append(card, ignore_index=True)
         else:
-            self._df = self._df.drop(idx).reset_index(drop=True)
+            idx = self._df[self._df[self._index] == card[self._index]].index
+            self._df.iloc[idx] = [card[col] for col in self._df.columns]
+        if self._s3fn:
+            self._save()
 
+    def remove(self, card):
+        if self._index not in card or self[card[self._index]] != card:
+            raise KeyError(f'Card {card} not found in database')
+        idx = self._df[self._df[self._index] == card[self._index]].index
+        self._df = self._df.drop(idx).reset_index(drop=True)
+        if self._s3fn:
+            self._save()
 
-class S3CardDB(CardDB):
-
-    def __init__(self, filename):
-        super(S3CardDB, self).__init__()
-        self._fn = filename
-        self._s3 = s3fs.S3FileSystem(anon=False)
+    def _read(self):
         try:
-            if self._s3.exists(self._fn):
-                with self._s3.open(self._fn, 'r') as f:
-                    self._df = pd.read_csv(f)
+            if S3FS.exists(self._s3fn):
+                print(f'Initializing database from file {self._s3fn} on Amazon S3')
+                with S3FS.open(self._s3fn, 'r') as f:
+                    return pd.read_csv(f)
             else:
-                self._df = pd.DataFrame()
+                return pd.DataFrame()
         except Exception:
             raise
 
     def _save(self):
-        print(f'Updating database file {self._fn} on Amazon S3')
-        with self._s3.open(self._fn, 'w') as f:
+        print(f'Saving database to file {self._s3fn} on Amazon S3')
+        with S3FS.open(self._s3fn, 'w') as f:
             self._df.to_csv(f, index=False)
 
-    def __setitem__(self, index, card):
-        super().__setitem__(index, card)
-        self._save()
 
-    def append(self, *cards):
-        super().append(*cards)
-        self._save()
-
-    def remove(self, card, key='id'):
-        super().remove(card, key=key)
-        self._save()
-
-
-PROJECT_CARDS = S3CardDB('xdev-bot/database.csv')
+PROJECT_CARDS = CardDB(index='note', s3filename='xdev-bot/database.csv')

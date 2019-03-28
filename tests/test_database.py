@@ -2,154 +2,107 @@ import s3fs
 import pytest
 import pandas as pd
 
-from xdev_bot.database import CardDB, S3CardDB
+from xdev_bot.database import CardDB
 
-S3 = s3fs.S3FileSystem(anon=False)
+S3FS = s3fs.S3FileSystem(anon=False)
 
 
-def test_init_empty_card_db():
-    cards = CardDB()
-    assert type(cards) is CardDB
+def test_init_empty():
+    cards = CardDB(index='id')
+    assert isinstance(cards, CardDB)
+
+
+def test_init_without_index_raises_index_error():
+    with pytest.raises(IndexError):
+        CardDB()
+
+
+def test_len():
+    cards = CardDB(index='id')
     assert len(cards) == 0
 
 
-def test_init_card_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    assert type(cards) is CardDB
-    assert len(cards) == 3
-
-
-def test_append_to_card_db():
-    cards = CardDB()
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards.append(card0)
-    assert cards[0] == card0
+def test_add():
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    cards = CardDB(index='id')
+    cards.add(card0)
     assert len(cards) == 1
-    cards.append(card1)
-    cards.append(card2)
-    assert cards[1] == card1
-    assert cards[2] == card2
-    assert len(cards) == 3
 
 
-def test_where_in_card_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    idx = cards.where(b='c')
-    assert set(idx) == {0, 2}
-    idx = cards.where(b='c', a=1)
-    assert set(idx) == {0}
-    idx = cards.where(id=3)
-    assert set(idx) == {1}
-    idx = cards.where(id=1111)
-    assert set(idx) == set()
-    idx = cards.where(x=4)
-    assert set(idx) == set()
+def test_add_invalid_index():
+    card0 = {'i': 2, 'a': 1, 'b': 'c'}
+    cards = CardDB(index='id')
+    with pytest.raises(IndexError):
+        cards.add(card0)
 
 
-def test_getitem_of_card_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    assert cards[0] == card0
-    idx = cards.where(id=3)
-    assert cards[idx] == card1
-    idx = cards.where(b='c')
-    assert cards[idx] == [card0, card2]
+def test_add_nonunique():
+    cards = CardDB(index='id')
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    card1 = {'id': 2, 'a': 2, 'b': 'f'}
+    cards.add(card0)
+    cards.add(card1)
+    assert len(cards) == 1
+    assert cards[2] == card1
 
 
-def test_setitem_of_card_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    card1b = {'id': 3, 'a': 3, 'b': 'g', 'd': 6.3}
-    idx = cards.where(id=3)
-    cards[idx] = card1b
-    assert cards[1] == card1b
+def test_init_single():
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    cards = CardDB(card0, index='id')
+    assert len(cards) == 1
 
 
-def test_update_card_in_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    card1b = {'id': 3, 'a': 3, 'b': 'g', 'd': 6.3}
-    cards.update(card1b, key='id')
-    assert cards[1] == card1b
+def test_getitem():
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    card1 = {'id': 3, 'a': 2, 'b': 'c'}
+    card2 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card0, card1, card2, index='id')
+
+    assert cards[2] == card0
+    assert cards[3] == card1
+    assert cards[7] == card2
+    assert cards[0] is None
+    assert cards[1] is None
 
 
-def test_update_card_not_in_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    card1b = {'id': 5, 'a': 3, 'b': 'g', 'd': 6.3}
-    cards.update(card1b, key='id')
-    assert cards[1] == card1
-    assert len(cards) == 4
-    assert cards[3] == card1b
+def test_init_database_with_invalid_index():
+    card0 = {'a': 1, 'b': 'c'}
+    with pytest.raises(IndexError):
+        CardDB(card0, index='id')
 
 
-def test_update_card_in_empty_db():
-    cards = CardDB()
-    card0 = {'id': 5, 'a': 3, 'b': 'g', 'd': 6.3}
-    cards.update(card0, key='id')
-    assert cards[0] == card0
-
-
-def test_remove_card_in_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1, card2)
-    cards.remove(card1, key='id')
-    assert len(cards) == 2
-    assert cards[0] == card0
-    assert cards[1] == card2
-
-
-def test_remove_card_not_in_db():
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards = CardDB(card0, card1)
-    with pytest.raises(KeyError):
-        cards.remove(card2, key='id')
-
-
-@pytest.fixture
-def s3fn():
-    fn = 'xdev-bot/test_database.csv'
-    if S3.exists(fn):
-        S3.rm(fn)
-    yield fn
-    if S3.exists(fn):
-        S3.rm(fn)
-
-
-def test_init_s3_card_db(s3fn):
-    cards = S3CardDB(s3fn)
-    assert not S3.exists(s3fn)
-    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
-    cards.append(card0)
-    cards.append(card1)
-    cards.append(card2)
+def test_remove():
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    card1 = {'id': 3, 'a': 2, 'b': 'c'}
+    card2 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card0, card1, card2, index='id')
     assert len(cards) == 3
     cards.remove(card1)
-    assert S3.exists(s3fn)
-    with S3.open(s3fn, 'r') as f:
+    assert len(cards) == 2
+    assert cards[2] == card0
+    assert cards[3] is None
+    assert cards[7] == card2
+
+
+def test_s3_backend():
+    s3fn = 'xdev-bot/test_database.csv'
+    if S3FS.exists(s3fn):
+        S3FS.rm(s3fn)
+    cards = CardDB(index='id', s3filename=s3fn)
+    assert not S3FS.exists(s3fn)
+    card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
+    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
+    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
+    cards.add(card0)
+    cards.add(card1)
+    cards.add(card2)
+    assert len(cards) == 3
+    cards.remove(card1)
+    assert S3FS.exists(s3fn)
+    with S3FS.open(s3fn, 'r') as f:
         df = pd.read_csv(f)
-    assert cards.dataframe.equals(df)
-    cards2 = S3CardDB(s3fn)
-    assert cards.dataframe.equals(cards2.dataframe)
+    assert cards._df.equals(df)
+    cards2 = CardDB(index='id', s3filename=s3fn)
+    assert cards._df.equals(cards2._df)
+    if S3FS.exists(s3fn):
+        S3FS.rm(s3fn)

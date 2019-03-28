@@ -36,11 +36,10 @@ def create_card(issue_or_pr_event, column='to_do'):
 def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
     event_type = get_event_type(issue_or_pr_event)
     html_url = issue_or_pr_event.data[event_type]['html_url']
-    idx = database.where(note=html_url)
-    if len(idx) == 0:
+    card = database[html_url]
+    if card is None:
         return create_card(issue_or_pr_event, column=column)
-    elif len(idx) == 1:
-        card = database[idx[0]]
+    else:
         card_id = int(card['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
         url = f'/projects/columns/cards/{card_id}/moves'
@@ -48,8 +47,6 @@ def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
         accept = 'application/vnd.github.inertia-preview+json'
         print(f'Moving {event_type} card to column {column}: {card["note"]}')
         return GHArgs(url, data=data, accept=accept)
-    else:
-        raise KeyError(f'could not find unique project card for {html_url}')
 
 
 def get_event_type(event):

@@ -66,7 +66,7 @@ def test_move_card():
             'creator': 'xdev-bot',
             'mover': 'xdev-bot',
             'column_name': 'to_do'}
-    cards = CardDB(card)
+    cards = CardDB(card, index='note')
 
     with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
         payload = json.load(f)
@@ -79,7 +79,7 @@ def test_move_card():
 
 
 def test_move_card_not_found():
-    cards = CardDB()
+    cards = CardDB(index='note')
 
     with open(os.path.join(PWD, 'payload_examples/issue_closed.json')) as f:
         payload = json.load(f)
