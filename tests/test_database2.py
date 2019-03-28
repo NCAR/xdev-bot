@@ -4,31 +4,36 @@ from xdev_bot.database2 import CardDB
 
 
 def test_init_empty():
-    cards = CardDB()
+    cards = CardDB(index='id')
     assert isinstance(cards, CardDB)
 
 
+def test_init_without_index_raises_index_error():
+    with pytest.raises(IndexError):
+        CardDB()
+
+
 def test_len():
-    cards = CardDB()
+    cards = CardDB(index='id')
     assert len(cards) == 0
 
 
 def test_add():
     card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    cards = CardDB()
+    cards = CardDB(index='id')
     cards.add(card0)
     assert len(cards) == 1
 
 
 def test_add_invalid_index():
     card0 = {'i': 2, 'a': 1, 'b': 'c'}
-    cards = CardDB()
+    cards = CardDB(index='id')
     with pytest.raises(IndexError):
         cards.add(card0)
 
 
 def test_add_nonunique():
-    cards = CardDB()
+    cards = CardDB(index='id')
     card0 = {'id': 2, 'a': 1, 'b': 'c'}
     card1 = {'id': 2, 'a': 2, 'b': 'f'}
     cards.add(card0)
@@ -39,7 +44,7 @@ def test_add_nonunique():
 
 def test_init_single():
     card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    cards = CardDB(card0)
+    cards = CardDB(card0, index='id')
     assert len(cards) == 1
 
 

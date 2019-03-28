@@ -4,7 +4,9 @@ import pandas as pd
 class CardDB(object):
     """Database for cards on the project board"""
 
-    def __init__(self, *cards, index='id'):
+    def __init__(self, *cards, index=None):
+        if index is None:
+            raise IndexError(f'Must set an unique index column name')
         self._df = pd.DataFrame()
         self._index = index
         for card in cards:
