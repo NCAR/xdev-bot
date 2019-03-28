@@ -24,7 +24,7 @@ def test_get_card():
             'created_at': '2019-02-22T20:42:18Z',
             'updated_at': '2019-02-22T20:42:18Z',
             'creator': 'xdev-bot',
-            'mover': 'xdev-bot',
+            'sender': 'xdev-bot',
             'column_name': 'to_do',
             'type': 'issue'}
     assert get_card(event) == card
@@ -64,7 +64,7 @@ def test_move_card():
             'created_at': '2019-02-22T20:42:18Z',
             'updated_at': '2019-02-22T20:42:18Z',
             'creator': 'xdev-bot',
-            'mover': 'xdev-bot',
+            'sender': 'xdev-bot',
             'column_name': 'to_do'}
     cards = CardDB(card, index='note')
 

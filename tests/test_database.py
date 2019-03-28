@@ -84,6 +84,19 @@ def test_remove():
     assert cards[7] == card2
 
 
+def test_remove_only_matching_index():
+    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    card1 = {'id': 3, 'a': 2, 'b': 'c'}
+    card2 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card0, card1, card2, index='id')
+    assert len(cards) == 3
+    cards.remove({'id': 3})
+    assert len(cards) == 2
+    assert cards[2] == card0
+    assert cards[3] is None
+    assert cards[7] == card2
+
+
 def test_s3_backend():
     s3fn = 'xdev-bot/test_database.csv'
     if S3FS.exists(s3fn):

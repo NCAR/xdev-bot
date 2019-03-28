@@ -7,7 +7,7 @@ def get_card(card_event):
     keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
     card = {k: card_event.data['project_card'][k] for k in keys}
     card['creator'] = card_event.data['project_card']['creator']['login']
-    card['mover'] = card_event.data['sender']['login']
+    card['sender'] = card_event.data['sender']['login']
     card['column_name'] = PROJECT_BOARD['column_ids'].inverse[card['column_id']]
     card_type = card['note'].split('/')[-2]
     card['type'] = 'pull_request' if card_type == 'pull' else 'issue'
