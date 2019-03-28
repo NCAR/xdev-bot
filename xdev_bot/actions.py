@@ -67,7 +67,9 @@ def get_event_type(event):
 
 def update_issue(card, state=None):
     prefix = 'https://api.github.com/repos/'
-    suffix = '/'.join(card['note'].split('/')[-4:])
+    suffix_items = card['note'].split('/')[-4:]
+    suffix_items[-2] = 'issues'
+    suffix = '/'.join(suffix_items)
     url = prefix + suffix
     data = {}
     if state:
