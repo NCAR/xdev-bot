@@ -71,5 +71,5 @@ def test_remove():
     cards.remove(card1)
     assert len(cards) == 2
     assert cards[2] == card0
-    assert cards[3] == None
+    assert cards[3] is None
     assert cards[7] == card2
