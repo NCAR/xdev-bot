@@ -1,6 +1,6 @@
 import gidgethub.routing
 
-from .actions import create_card, get_card, move_card, card_is_issue, update_issue
+from .actions import create_card, get_card, move_card, card_is_issue, card_is_pull_request, update_issue
 from .database import PROJECT_CARDS
 
 router = gidgethub.routing.Router()
@@ -42,7 +42,7 @@ async def project_card_created(event, gh, *args, **kwargs):
 async def project_card_moved(event, gh, *args, **kwargs):
     card = get_card(event)
     PROJECT_CARDS.add(card)
-    if card_is_issue(card):
+    if card_is_issue(card) or card_is_pull_request(card):
         state = 'closed' if card['column_name'] == 'done' else 'open'
         ghargs = update_issue(card, state=state)
         await gh.patch(ghargs.url, **ghargs.kwargs)
