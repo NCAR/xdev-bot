@@ -62,3 +62,6 @@ class CardDB(object):
         print(f'Saving database to file {self._s3fn} on Amazon S3')
         with S3FS.open(self._s3fn, 'w') as f:
             self._df.to_csv(f, index=False)
+
+
+PROJECT_CARDS = CardDB(index='note', s3filename='xdev-bot/database.csv')
