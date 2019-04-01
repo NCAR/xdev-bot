@@ -32,18 +32,21 @@ def get_move_card_ghargs(issue_or_pr_event, column='to_do', database=PROJECT_CAR
 
 def get_update_status_ghargs(card_event):
     card = get_card_from_card_event(card_event)
-    prefix = 'https://api.github.com/repos/'
-    suffix_items = card['note'].split('/')[-4:]
-    suffix_items[-2] = 'issues'
-    suffix = '/'.join(suffix_items)
-    url = prefix + suffix
-    state = 'closed' if card['column_name'] == 'done' else 'open'
-    data = {'state': state}
-    print(f'Updating issue status to {state}: {card["note"]}')
-    return GHArgs(url, data=data)
+    if get_card_type(card):
+        prefix = 'https://api.github.com/repos/'
+        suffix_items = card['note'].split('/')[-4:]
+        suffix_items[-2] = 'issues'
+        suffix = '/'.join(suffix_items)
+        url = prefix + suffix
+        state = 'closed' if card['column_name'] == 'done' else 'open'
+        data = {'state': state}
+        print(f'Updating issue status to {state}: {card["note"]}')
+        return GHArgs(url, data=data)
+    else:
+        return None
 
 
-def save_new_card(card_event, database=PROJECT_CARDS):
+def save_card(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
     database.add(card)
     database.save()

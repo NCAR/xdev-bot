@@ -5,7 +5,7 @@ from gidgethub import sansio
 
 from xdev_bot.actions import (get_create_card_ghargs, get_card_from_card_event, get_move_card_ghargs,
                               get_update_status_ghargs, get_event_type, get_card_type,
-                              save_new_card, save_merged_status, remove_card)
+                              save_card, save_merged_status, remove_card)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
 
@@ -68,7 +68,7 @@ def test_save_new_card_and_remove():
 
     card = get_card_from_card_event(event)
 
-    save_new_card(event, database=cards)
+    save_card(event, database=cards)
 
     assert len(cards) == 1
     assert cards[card['note']] == card
@@ -99,6 +99,14 @@ def test_get_update_status_ghargs():
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
                     data={'state': 'open'})
     assert get_update_status_ghargs(event) == ghargs
+
+
+def test_get_update_status_ghargs_other():
+    with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    assert get_update_status_ghargs(event) is None
 
 
 def test_get_card_issue():

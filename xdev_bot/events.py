@@ -1,7 +1,8 @@
 import gidgethub.routing
 
 from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_status_ghargs,
-                      get_event_type, save_new_card, remove_card, save_merged_status)
+                      save_card, remove_card, save_merged_status, get_card_from_card_event,
+                      get_card_type)
 
 router = gidgethub.routing.Router()
 
@@ -19,10 +20,14 @@ async def pr_opened_event(event, gh, *args, **kwargs):
 
 
 @router.register('issues', action='closed')
-@router.register('pull_request', action='closed')
 async def issue_closed_event(event, gh, *args, **kwargs):
-    if get_event_type(event) == 'pull_request':
-        save_merged_status(event)
+    ghargs = get_move_card_ghargs(event, column='done')
+    await gh.post(ghargs.url, **ghargs.kwargs)
+
+
+@router.register('pull_request', action='closed')
+async def pull_request_closed_event(event, gh, *args, **kwargs):
+    save_merged_status(event)
     ghargs = get_move_card_ghargs(event, column='done')
     await gh.post(ghargs.url, **ghargs.kwargs)
 
@@ -36,14 +41,14 @@ async def issue_or_pr_reopened_event(event, gh, *args, **kwargs):
 
 @router.register('project_card', action='created')
 async def project_card_created_event(event, gh, *args, **kwargs):
-    save_new_card(event)
+    save_card(event)
 
 
 @router.register('project_card', action='moved')
 async def project_card_moved_event(event, gh, *args, **kwargs):
-    save_new_card(event)
-    if get_event_type(event):
-        ghargs = get_update_status_ghargs(event)
+    save_card(event)
+    ghargs = get_update_status_ghargs(event)
+    if ghargs:
         await gh.patch(ghargs.url, **ghargs.kwargs)
 
 
