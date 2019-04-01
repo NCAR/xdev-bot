@@ -36,12 +36,14 @@ async def issue_or_pr_reopened_event(event, gh, *args, **kwargs):
 async def project_card_created(event, gh, *args, **kwargs):
     card = get_card(event)
     PROJECT_CARDS.add(card)
+    PROJECT_CARDS.save()
 
 
 @router.register('project_card', action='moved')
 async def project_card_moved(event, gh, *args, **kwargs):
     card = get_card(event)
     PROJECT_CARDS.add(card)
+    PROJECT_CARDS.save()
     if card_is_issue(card) or card_is_pull_request(card):
         state = 'closed' if card['column_name'] == 'done' else 'open'
         ghargs = update_issue(card, state=state)
@@ -52,3 +54,4 @@ async def project_card_moved(event, gh, *args, **kwargs):
 async def project_card_deleted(event, gh, *args, **kwargs):
     card = get_card(event)
     PROJECT_CARDS.remove(card)
+    PROJECT_CARDS.save()
