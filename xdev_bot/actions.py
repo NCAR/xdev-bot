@@ -3,33 +3,7 @@ from .database import PROJECT_CARDS
 from .gidgethub import GHArgs
 
 
-def get_card(card_event):
-    keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
-    card = {k: card_event.data['project_card'][k] for k in keys}
-    card['creator'] = card_event.data['project_card']['creator']['login']
-    card['sender'] = card_event.data['sender']['login']
-    card['column_name'] = PROJECT_BOARD['column_ids'].inverse[card['column_id']]
-    card['type'] = get_note_type(card['note'])
-    return card
-
-
-def get_note_type(note):
-    if note.startswith('https://github.com/'):
-        note_t = note.split('/')[-2]
-        return 'pull_request' if note_t == 'pull' else 'issue'
-    else:
-        return 'other'
-
-
-def card_is_issue(card):
-    return card['type'] == 'issue'
-
-
-def card_is_pull_request(card):
-    return card['type'] == 'pull_request'
-
-
-def create_card(issue_or_pr_event, column='to_do'):
+def get_create_card_ghargs(issue_or_pr_event, column='to_do'):
     column_id = PROJECT_BOARD['column_ids'][column]
     event_type = get_event_type(issue_or_pr_event)
     html_url = issue_or_pr_event.data[event_type]['html_url']
@@ -40,12 +14,12 @@ def create_card(issue_or_pr_event, column='to_do'):
     return GHArgs(url, data=data, accept=accept)
 
 
-def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
+def get_move_card_ghargs(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
     event_type = get_event_type(issue_or_pr_event)
     html_url = issue_or_pr_event.data[event_type]['html_url']
     card = database[html_url]
     if card is None:
-        return create_card(issue_or_pr_event, column=column)
+        return get_create_card_ghargs(issue_or_pr_event, column=column)
     else:
         card_id = int(card['id'])
         column_id = PROJECT_BOARD['column_ids'][column]
@@ -54,6 +28,49 @@ def move_card(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
         accept = 'application/vnd.github.inertia-preview+json'
         print(f'Moving {event_type} card to column {column}: {card["note"]}')
         return GHArgs(url, data=data, accept=accept)
+
+
+def get_update_status_ghargs(card_event):
+    card = get_card_from_card_event(card_event)
+    prefix = 'https://api.github.com/repos/'
+    suffix_items = card['note'].split('/')[-4:]
+    suffix_items[-2] = 'issues'
+    suffix = '/'.join(suffix_items)
+    url = prefix + suffix
+    state = 'closed' if card['column_name'] == 'done' else 'open'
+    data = {'state': state}
+    print(f'Updating issue status to {state}: {card["note"]}')
+    return GHArgs(url, data=data)
+
+
+def save_new_card(card_event, database=PROJECT_CARDS):
+    card = get_card_from_card_event(card_event)
+    database.add(card)
+    database.save()
+
+
+def remove_card(card_event, database=PROJECT_CARDS):
+    card = get_card_from_card_event(card_event)
+    database.remove(card)
+    database.save()
+
+
+def save_merged_status(pr_event, database=PROJECT_CARDS):
+    note = pr_event.data['pull_request']['html_url']
+    merged = pr_event.data['pull_request']['merged']
+    database[note] = {'merged': merged}
+    database.save()
+
+
+def get_card_from_card_event(card_event):
+    keys = ['url', 'id', 'note', 'column_url', 'column_id', 'created_at', 'updated_at']
+    card = {k: card_event.data['project_card'][k] for k in keys}
+    card['creator'] = card_event.data['project_card']['creator']['login']
+    card['sender'] = card_event.data['sender']['login']
+    card['column_name'] = PROJECT_BOARD['column_ids'].inverse[card['column_id']]
+    card['type'] = get_card_type(card)
+    card['merged'] = None
+    return card
 
 
 def get_event_type(event):
@@ -65,14 +82,10 @@ def get_event_type(event):
         return None
 
 
-def update_issue(card, state=None):
-    prefix = 'https://api.github.com/repos/'
-    suffix_items = card['note'].split('/')[-4:]
-    suffix_items[-2] = 'issues'
-    suffix = '/'.join(suffix_items)
-    url = prefix + suffix
-    data = {}
-    if state:
-        data['state'] = state
-        print(f'Updating issue status to {state}: {card["note"]}')
-    return GHArgs(url, data=data)
+def get_card_type(card):
+    note = card['note']
+    if note.startswith('https://github.com/'):
+        note_t = note.split('/')[-2]
+        return 'pull_request' if note_t == 'pull' else 'issue'
+    else:
+        return None
