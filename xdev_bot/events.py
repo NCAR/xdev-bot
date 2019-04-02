@@ -7,7 +7,7 @@ router = gidgethub.routing.Router()
 
 
 async def post_or_patch(gh, args):
-    if args:
+    if args and hasattr(gh, args.func):
         gh_func = getattr(gh, args.func)
         await gh_func(args.url, **args.kwargs)
 
