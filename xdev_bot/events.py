@@ -51,8 +51,8 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 
 @router.register('project_card', action='moved')
 async def project_card_moved_event(event, gh, *args, **kwargs):
-    save_card(event)
     ghargs = get_update_status_ghargs(event)
+    save_card(event)
     await post_or_patch(gh, ghargs)
 
 
