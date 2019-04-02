@@ -7,8 +7,9 @@ router = gidgethub.routing.Router()
 
 
 async def post_or_patch(gh, args):
-    gh_func = getattr(gh, args.func)
-    await gh_func(args.url, **args.kwargs)
+    if args:
+        gh_func = getattr(gh, args.func)
+        await gh_func(args.url, **args.kwargs)
 
 
 @router.register('issues', action='opened')

@@ -38,30 +38,20 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
 def get_update_status_ghargs(event):
     card = get_card_from_card_event(event)
     card_t = get_card_type(card)
-    if card_t == 'issue':
-        return get_update_issue_status_ghargs(card)
-    elif card_t == 'pull_request':
-        return get_update_pull_status_ghargs(card)
-
-
-def get_update_issue_status_ghargs(card):
-    card_type = get_card_type(card)
-    prefix = 'https://api.github.com/repos/'
-    suffix_items = card['note'].split('/')[-4:]
-    suffix_items[-2] = 'issues'
-    suffix = '/'.join(suffix_items)
-    url = prefix + suffix
-    state = 'closed' if card['column_name'] == 'done' else 'open'
-    data = {'state': state}
-    print(f'Updating {card_type} status to {state}: {card["note"]}')
-    return GHArgs(url, data=data, func='patch')
-
-
-def get_update_pull_status_ghargs(card):
-    if card['merged']:
+    if card_t is None:
+        return
+    elif card_t == 'pull_request' and card['merged']:
         return get_move_card_ghargs_from_card(card, column='done')
     else:
-        return get_update_issue_status_ghargs(card)
+        prefix = 'https://api.github.com/repos/'
+        suffix_items = card['note'].split('/')[-4:]
+        suffix_items[-2] = 'issues'
+        suffix = '/'.join(suffix_items)
+        url = prefix + suffix
+        state = 'closed' if card['column_name'] == 'done' else 'open'
+        data = {'state': state}
+        print(f'Updating {card_t} status to {state}: {card["note"]}')
+        return GHArgs(url, data=data, func='patch')
 
 
 def save_card(card_event, database=PROJECT_CARDS):
