@@ -73,6 +73,7 @@ def save_merged_status(pr_event, database=PROJECT_CARDS):
     merged = pr_event.data['pull_request']['merged']
     print(f'Saving merged status as {merged} for card: {note}')
     database[note] = {'merged': merged}
+    print(f'card = {database[note]}')
     database.save()
 
 
