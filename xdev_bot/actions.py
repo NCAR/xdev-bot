@@ -35,8 +35,8 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
     return GHArgs(url, data=data, accept=accept)
 
 
-def get_update_status_ghargs(event):
-    card = get_card_from_card_event(event)
+def get_update_status_ghargs(card_event):
+    card = get_card_from_card_event(card_event)
     card_t = get_card_type(card)
     if card_t is None:
         return
