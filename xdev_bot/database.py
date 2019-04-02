@@ -70,7 +70,6 @@ class CardDB(object):
         if self._s3fn:
             print(f'Saving database to file {self._s3fn} on Amazon S3')
             with S3FS.open(self._s3fn, 'w') as f:
-                print(self._df)
                 self._df.to_csv(f, index=False)
 
 

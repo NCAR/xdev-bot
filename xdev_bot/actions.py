@@ -73,7 +73,6 @@ def save_merged_status(pr_event, database=PROJECT_CARDS):
     merged = pr_event.data['pull_request']['merged']
     print(f'Saving merged status as {merged} for card: {note}')
     database[note] = {'merged': merged}
-    print(f'card = {database[note]}')
     database.save()
 
 
@@ -84,7 +83,6 @@ def get_card_from_card_event(card_event):
     card['sender'] = card_event.data['sender']['login']
     card['column_name'] = PROJECT_BOARD['column_ids'].inverse[card['column_id']]
     card['type'] = get_card_type(card)
-    card['merged'] = None
     return card
 
 

@@ -124,8 +124,7 @@ def test_get_card_issue():
             'creator': 'xdev-bot',
             'sender': 'xdev-bot',
             'column_name': 'to_do',
-            'type': 'issue',
-            'merged': None}
+            'type': 'issue'}
     assert get_card_from_card_event(event) == card
 
     assert get_card_type(card) == 'issue'
@@ -146,8 +145,7 @@ def test_get_card_pr():
             'creator': 'xdev-bot',
             'sender': 'xdev-bot',
             'column_name': 'in_progress',
-            'type': 'pull_request',
-            'merged': None}
+            'type': 'pull_request'}
     assert get_card_from_card_event(event) == card
 
     assert get_card_type(card) == 'pull_request'
@@ -168,8 +166,7 @@ def test_get_card_other():
             'creator': 'xdev-bot',
             'sender': 'xdev-bot',
             'column_name': 'to_do',
-            'type': None,
-            'merged': None}
+            'type': None}
     assert get_card_from_card_event(event) == card
 
     assert get_card_type(card) is None
