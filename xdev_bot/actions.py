@@ -40,7 +40,7 @@ def get_update_status_ghargs(event):
     card_t = get_card_type(card)
     if card_t is None:
         return
-    elif card_t == 'pull_request' and card['merged']:
+    elif card_t == 'pull_request' and 'merged' in card and card['merged']:
         return get_move_card_ghargs_from_card(card, column='done')
     else:
         prefix = 'https://api.github.com/repos/'
