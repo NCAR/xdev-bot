@@ -91,14 +91,30 @@ def test_save_merged_status():
     assert cards[event.data['pull_request']['html_url']]['merged'] == False
 
 
-def test_get_update_issue_status_ghargs():
+def test_get_update_issue_status_ghargs_no_change():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/issues/11',
+            'column_name': 'to_do', 'merged': None}
+    cards = CardDB(card, index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    assert get_update_status_ghargs(event, database=cards) is None
+
+
+def test_get_update_issue_status_ghargs_opened():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/issues/11',
+            'column_name': 'done', 'merged': None}
+    cards = CardDB(card, index='note')
+
     with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
                     data={'state': 'open'}, func='patch')
-    assert get_update_status_ghargs(event) == ghargs
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_pull_status_ghargs_other():

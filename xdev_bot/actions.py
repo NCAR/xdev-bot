@@ -35,14 +35,19 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
     return GHArgs(url, data=data, accept=accept)
 
 
-def get_update_status_ghargs(card_event):
+def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
     card_t = get_card_type(card)
     if card_t is None:
         return
     elif card_t == 'pull_request' and 'merged' in card and card['merged']:
         return get_move_card_ghargs_from_card(card, column='done')
-    else:
+    db_card = database[card['note']]
+    open_columns = ['to_do', 'in_progress']
+    card_is_open = card['column_name'] in open_columns
+    card_was_open = db_card['column_name'] in open_columns
+    card_changed_state = card_is_open != card_was_open
+    if card_changed_state:
         prefix = 'https://api.github.com/repos/'
         suffix_items = card['note'].split('/')[-4:]
         suffix_items[-2] = 'issues'
