@@ -62,6 +62,7 @@ def save_card(card_event, database=PROJECT_CARDS):
 
 def remove_card(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
+    print(f'Removing card from database: {card["note"]}')
     database.remove(card)
     database.save()
 
@@ -69,6 +70,7 @@ def remove_card(card_event, database=PROJECT_CARDS):
 def save_merged_status(pr_event, database=PROJECT_CARDS):
     note = pr_event.data['pull_request']['html_url']
     merged = pr_event.data['pull_request']['merged']
+    print(f'Saving merged status as {merged} for card: {note}')
     database[note] = {'merged': merged}
     database.save()
 
