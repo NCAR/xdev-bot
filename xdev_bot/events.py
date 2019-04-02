@@ -6,36 +6,41 @@ from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_s
 router = gidgethub.routing.Router()
 
 
+async def post_or_patch(gh, args):
+    gh_func = getattr(gh, args.func)
+    await gh_func(args.url, **args.kwargs)
+
+
 @router.register('issues', action='opened')
 async def issue_opened_event(event, gh, *args, **kwargs):
     ghargs = get_create_card_ghargs(event, column='to_do')
-    await gh.post(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('pull_request', action='opened')
 async def pr_opened_event(event, gh, *args, **kwargs):
     ghargs = get_create_card_ghargs(event, column='in_progress')
-    await gh.post(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('issues', action='closed')
 async def issue_closed_event(event, gh, *args, **kwargs):
     ghargs = get_move_card_ghargs(event, column='done')
-    await gh.post(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('pull_request', action='closed')
 async def pull_request_closed_event(event, gh, *args, **kwargs):
     save_merged_status(event)
     ghargs = get_move_card_ghargs(event, column='done')
-    await gh.post(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('issues', action='reopened')
 @router.register('pull_request', action='reopened')
 async def issue_or_pr_reopened_event(event, gh, *args, **kwargs):
     ghargs = get_move_card_ghargs(event, column='in_progress')
-    await gh.post(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('project_card', action='created')
@@ -47,8 +52,7 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 async def project_card_moved_event(event, gh, *args, **kwargs):
     save_card(event)
     ghargs = get_update_status_ghargs(event)
-    gh_func = getattr(gh, ghargs.func)
-    await gh_func(ghargs.url, **ghargs.kwargs)
+    await post_or_patch(gh, ghargs)
 
 
 @router.register('project_card', action='deleted')
