@@ -4,8 +4,8 @@ import json
 from gidgethub import sansio
 
 from xdev_bot.actions import (get_create_card_ghargs, get_card_from_card_event, get_move_card_ghargs,
-                              get_update_issue_status_ghargs, get_update_pull_status_ghargs,
-                              get_event_type, get_card_type, save_card, save_merged_status, remove_card)
+                              get_update_status_ghargs, get_event_type, get_card_type,
+                              save_card, save_merged_status, remove_card)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
 
@@ -97,8 +97,8 @@ def test_get_update_issue_status_ghargs():
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
-                    data={'state': 'open'})
-    assert get_update_issue_status_ghargs(event) == ghargs
+                    data={'state': 'open'}, func='patch')
+    assert get_update_status_ghargs(event) == ghargs
 
 
 def test_get_update_pull_status_ghargs_other():
@@ -106,7 +106,7 @@ def test_get_update_pull_status_ghargs_other():
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    assert get_update_pull_status_ghargs(event) is None
+    assert get_update_status_ghargs(event) is None
 
 
 def test_get_card_issue():

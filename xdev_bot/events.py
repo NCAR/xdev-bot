@@ -1,8 +1,7 @@
 import gidgethub.routing
 
-from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_issue_status_ghargs,
-                      save_card, remove_card, save_merged_status, get_card_from_card_event,
-                      get_card_type, get_update_pull_status_ghargs)
+from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_status_ghargs,
+                      save_card, remove_card, save_merged_status)
 
 router = gidgethub.routing.Router()
 
@@ -47,15 +46,9 @@ async def project_card_created_event(event, gh, *args, **kwargs):
 @router.register('project_card', action='moved')
 async def project_card_moved_event(event, gh, *args, **kwargs):
     save_card(event)
-    card = get_card_from_card_event(event)
-    card_t = get_card_type(card)
-    if card_t == 'issue':
-        ghargs = get_update_issue_status_ghargs(card)
-        await gh.patch(ghargs.url, **ghargs.kwargs)
-    elif card_t == 'pull_request':
-        ghargs = get_update_pull_status_ghargs(card)
-        gh_func = getattr(gh, ghargs.func)
-        await gh_func(ghargs.url, **ghargs.kwargs)
+    ghargs = get_update_status_ghargs(event)
+    gh_func = getattr(gh, ghargs.func)
+    await gh_func(ghargs.url, **ghargs.kwargs)
 
 
 @router.register('project_card', action='deleted')

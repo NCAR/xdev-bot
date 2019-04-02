@@ -35,6 +35,15 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
     return GHArgs(url, data=data, accept=accept)
 
 
+def get_update_status_ghargs(event):
+    card = get_card_from_card_event(event)
+    card_t = get_card_type(card)
+    if card_t == 'issue':
+        return get_update_issue_status_ghargs(card)
+    elif card_t == 'pull_request':
+        return get_update_pull_status_ghargs(card)
+
+
 def get_update_issue_status_ghargs(card):
     card_type = get_card_type(card)
     prefix = 'https://api.github.com/repos/'
