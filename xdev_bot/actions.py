@@ -40,9 +40,12 @@ def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
     card_t = get_card_type(card)
     if card_t is None:
         return
-    elif card_t == 'pull_request' and 'merged' in card and card['merged']:
-        return get_move_card_ghargs_from_card(card, column='done')
     db_card = database[card['note']]
+    if db_card is None:
+        return save_card(card_event, database=database)
+    if card_t == 'pull_request' and 'merged' in db_card and db_card['merged']:
+        print('Oh, it is happening!')
+        return get_move_card_ghargs_from_card(card, column='done')
     open_columns = ['to_do', 'in_progress']
     card_is_open = card['column_name'] in open_columns
     card_was_open = db_card['column_name'] in open_columns
