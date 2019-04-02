@@ -10,7 +10,7 @@ def get_create_card_ghargs(issue_or_pr_event, column='to_do'):
     url = f'/projects/columns/{column_id}/cards'
     data = {'note': html_url}
     accept = 'application/vnd.github.inertia-preview+json'
-    print(f'Creating {event_type} card in column {column}: {data["note"]}')
+    print(f'Creating {event_type} card in {column} column: {data["note"]}')
     return GHArgs(url, data=data, accept=accept)
 
 
@@ -31,7 +31,7 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
     url = f'/projects/columns/cards/{card_id}/moves'
     data = {'position': 'top', 'column_id': column_id}
     accept = 'application/vnd.github.inertia-preview+json'
-    print(f'Moving {card_type} card to column {column}: {card["note"]}')
+    print(f'Moving {card_type} card to {column} column: {card["note"]}')
     return GHArgs(url, data=data, accept=accept)
 
 
@@ -56,6 +56,7 @@ def get_update_status_ghargs(event):
 
 def save_card(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
+    print(f'Saving card to database: {card["note"]}')
     database.add(card)
     database.save()
 
@@ -72,6 +73,7 @@ def save_merged_status(pr_event, database=PROJECT_CARDS):
     merged = pr_event.data['pull_request']['merged']
     print(f'Saving merged status as {merged} for card: {note}')
     database[note] = {'merged': merged}
+    print(f'card = {database[note]}')
     database.save()
 
 
