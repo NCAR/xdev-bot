@@ -56,6 +56,7 @@ def get_update_status_ghargs(event):
 
 def save_card(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
+    print(f'Saving card to database: {card["note"]}')
     database.add(card)
     database.save()
 
