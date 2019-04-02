@@ -9,6 +9,7 @@ dependencies:
   - python=3.7
   - s3fs
   - bidict
+  - pip
   - pip:
       - aiohttp==3.5.4
       - cachetools==3.1.0

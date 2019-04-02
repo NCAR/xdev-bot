@@ -65,9 +65,7 @@ def test_save_new_card_and_remove():
     with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
-
     card = get_card_from_card_event(event)
-
     save_card(event, database=cards)
 
     assert len(cards) == 1
@@ -78,30 +76,75 @@ def test_save_new_card_and_remove():
     assert len(cards) == 0
 
 
-def test_save_merged_status():
+def test_save_merged_status_closed():
     cards = CardDB(index='note')
 
-    with open(os.path.join(PWD, 'payload_examples/pull_request_opened.json')) as f:
+    with open(os.path.join(PWD, 'payload_examples/pull_request_closed.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="pull_request", delivery_id="12345")
-
+    note = event.data['pull_request']['html_url']
     save_merged_status(event, database=cards)
 
     assert len(cards) == 1
-    assert cards[event.data['pull_request']['html_url']]['merged'] == False
+    assert not cards[note]['merged']
 
 
-def test_get_update_issue_status_ghargs():
-    with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
+def test_save_merged_status_merged():
+    cards = CardDB(index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/pull_request_merged.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="pull_request", delivery_id="12345")
+    note = event.data['pull_request']['html_url']
+    save_merged_status(event, database=cards)
+
+    assert len(cards) == 1
+    assert cards[note]['merged']
+
+
+def test_get_update_status_ghargs_no_change():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/pull/75',
+            'column_name': 'done', 'merged': None}
+    cards = CardDB(card, index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_moved_to_done.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
-                    data={'state': 'open'}, func='patch')
-    assert get_update_status_ghargs(event) == ghargs
+    assert get_update_status_ghargs(event, database=cards) is None
 
 
-def test_get_update_pull_status_ghargs_other():
+def test_get_update_status_ghargs_closed():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/pull/75',
+            'column_name': 'to_do'}
+    cards = CardDB(card, index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_moved_to_done.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/75',
+                    data={'state': 'closed'}, func='patch')
+    assert get_update_status_ghargs(event, database=cards) == ghargs
+
+
+def test_get_update_status_ghargs_merged_pr():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/pull/75',
+            'column_name': 'done', 'merged': True}
+    cards = CardDB(card, index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_moved_to_in_progress.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    ghargs = GHArgs('/projects/columns/cards/18727793/moves',
+                    data={'position': 'top', 'column_id': 4_507_393},
+                    accept='application/vnd.github.inertia-preview+json')
+
+    assert get_update_status_ghargs(event, database=cards) == ghargs
+
+
+def test_get_update_status_ghargs_other():
     with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
