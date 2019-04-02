@@ -45,6 +45,16 @@ def test_kwargs_without_accept():
     assert ghargs.kwargs == {'data': data}
 
 
+def test_func():
+    url = 'https://github.com/NCAR/xdev-bot'
+    data = {'note': 'https://github.com/NCAR/xdev-bot/issues/11111'}
+    func = 'patch'
+    ghargs = GHArgs(url, data=data, func=func)
+    assert ghargs.url == url
+    assert ghargs.data == data
+    assert ghargs.func == func
+
+
 def test_equals():
     url = 'https://github.com/NCAR/xdev-bot'
     data = {'note': 'https://github.com/NCAR/xdev-bot/issues/11111'}

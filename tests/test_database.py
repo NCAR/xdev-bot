@@ -23,94 +23,114 @@ def test_len():
 
 
 def test_add():
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
     cards = CardDB(index='id')
-    cards.add(card0)
+    cards.add(card2)
     assert len(cards) == 1
 
 
 def test_add_invalid_index():
-    card0 = {'i': 2, 'a': 1, 'b': 'c'}
+    card2 = {'i': 2, 'a': 1, 'b': 'c'}
     cards = CardDB(index='id')
     with pytest.raises(IndexError):
-        cards.add(card0)
+        cards.add(card2)
 
 
 def test_add_nonunique():
     cards = CardDB(index='id')
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    card1 = {'id': 2, 'a': 2, 'b': 'f'}
-    cards.add(card0)
-    cards.add(card1)
+    card2a = {'id': 2, 'a': 1, 'b': 'c'}
+    card2b = {'id': 2, 'a': 2, 'b': 'f'}
+    cards.add(card2a)
+    cards.add(card2b)
     assert len(cards) == 1
-    assert cards[2] == card1
+    assert cards[2] == card2b
+
+
+def test_add_overwrite_element():
+    cards = CardDB(index='id')
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    cards.add(card2)
+    assert len(cards) == 1
+    assert cards[2] == card2
+    cards.add({'id': 2, 'a': 2})
+    assert cards[2] == {'id': 2, 'a': 2, 'b': 'c'}
 
 
 def test_init_single():
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    cards = CardDB(card0, index='id')
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    cards = CardDB(card2, index='id')
     assert len(cards) == 1
 
 
 def test_getitem():
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    card1 = {'id': 3, 'a': 2, 'b': 'c'}
-    card2 = {'id': 7, 'a': 2, 'b': 'f'}
-    cards = CardDB(card0, card1, card2, index='id')
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    card3 = {'id': 3, 'a': 2, 'b': 'c'}
+    card7 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card2, card3, card7, index='id')
 
-    assert cards[2] == card0
-    assert cards[3] == card1
-    assert cards[7] == card2
+    assert cards[2] == card2
+    assert cards[3] == card3
+    assert cards[7] == card7
     assert cards[0] is None
     assert cards[1] is None
 
 
+def test_setitem():
+    cards = CardDB(index='id')
+    cards[3] = {'id': 2, 'a': 1, 'b': 'c'}
+    assert cards[3] == {'id': 3, 'a': 1, 'b': 'c'}
+    cards[3] = {'c': 4.5}
+    assert len(cards) == 1
+    assert cards[3] == {'id': 3, 'a': 1, 'b': 'c', 'c': 4.5}
+
+
 def test_init_database_with_invalid_index():
-    card0 = {'a': 1, 'b': 'c'}
+    card = {'a': 1, 'b': 'c'}
     with pytest.raises(IndexError):
-        CardDB(card0, index='id')
+        CardDB(card, index='id')
 
 
 def test_remove():
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    card1 = {'id': 3, 'a': 2, 'b': 'c'}
-    card2 = {'id': 7, 'a': 2, 'b': 'f'}
-    cards = CardDB(card0, card1, card2, index='id')
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    card3 = {'id': 3, 'a': 2, 'b': 'c'}
+    card7 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card2, card3, card7, index='id')
     assert len(cards) == 3
-    cards.remove(card1)
+    cards.remove(card3)
     assert len(cards) == 2
-    assert cards[2] == card0
+    assert cards[2] == card2
     assert cards[3] is None
-    assert cards[7] == card2
+    assert cards[7] == card7
 
 
 def test_remove_only_matching_index():
-    card0 = {'id': 2, 'a': 1, 'b': 'c'}
-    card1 = {'id': 3, 'a': 2, 'b': 'c'}
-    card2 = {'id': 7, 'a': 2, 'b': 'f'}
-    cards = CardDB(card0, card1, card2, index='id')
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    card3 = {'id': 3, 'a': 2, 'b': 'c'}
+    card7 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card2, card3, card7, index='id')
     assert len(cards) == 3
     cards.remove({'id': 3})
     assert len(cards) == 2
-    assert cards[2] == card0
+    assert cards[2] == card2
     assert cards[3] is None
-    assert cards[7] == card2
+    assert cards[7] == card7
 
 
-def test_s3_backend():
+def test_save():
     s3fn = 'xdev-bot/test_database.csv'
     if S3FS.exists(s3fn):
         S3FS.rm(s3fn)
     cards = CardDB(index='id', s3filename=s3fn)
     assert not S3FS.exists(s3fn)
     card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
-    card1 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
-    card2 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
+    card3 = {'id': 3, 'a': 2, 'b': 'e', 'd': 8.5}
+    card7 = {'id': 7, 'a': 2, 'b': 'c', 'd': -4.2}
     cards.add(card0)
-    cards.add(card1)
-    cards.add(card2)
+    cards.add(card3)
+    cards.add(card7)
     assert len(cards) == 3
-    cards.remove(card1)
+    cards.remove(card3)
+    cards.save()
     assert S3FS.exists(s3fn)
     with S3FS.open(s3fn, 'r') as f:
         df = pd.read_csv(f)
