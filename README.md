@@ -13,6 +13,8 @@ This is a GitHub bot for tracking and managing **Xdev Team** work. It runs on He
 - GitHub Events Documentation:  see https://developer.github.com/v3/activity/events/types/
 - Payload Examples: see https://github.com/NCAR/xdev-bot/tree/master/payloads_examples
 - xdev-bot Webhook:  https://github.com/NCAR/xdev/settings/hooks/88451786
+- xdev-bot Test Repo:  https://github.com/NCAR/xdev-bot-testing
+- xdev Project Board: https://github.com/NCAR/xdev/projects/1
 
 ## Deployment 
 
