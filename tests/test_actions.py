@@ -145,11 +145,14 @@ def test_get_update_status_ghargs_merged_pr():
 
 
 def test_get_update_status_ghargs_other():
+    card = {'note': 'Just some text', 'column_name': 'in_progress'}
+    cards = CardDB(card, index='note')
+
     with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    assert get_update_status_ghargs(event) is None
+    assert get_update_status_ghargs(event, database=cards) is None
 
 
 def test_get_card_issue():
