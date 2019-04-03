@@ -103,6 +103,16 @@ def test_remove():
     assert cards[7] == card7
 
 
+def test_remove_not_found():
+    cards = CardDB(index='id')
+
+    with pytest.raises(KeyError):
+        cards.remove({'id': 2, 'a': 1, 'b': 'c'})
+
+    with pytest.raises(KeyError):
+        cards.remove({'a': 1, 'b': 'c'})
+
+
 def test_remove_only_matching_index():
     card2 = {'id': 2, 'a': 1, 'b': 'c'}
     card3 = {'id': 3, 'a': 2, 'b': 'c'}

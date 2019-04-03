@@ -62,3 +62,11 @@ def test_equals():
     ghargs1 = GHArgs(url, data=data, accept=accept)
     ghargs2 = GHArgs(url, data=data, accept=accept)
     assert ghargs1 == ghargs2
+
+
+def test_equals_different_type():
+    url = 'https://github.com/NCAR/xdev-bot'
+    data = {'note': 'https://github.com/NCAR/xdev-bot/issues/11111'}
+    accept = 'application/vnd.github.inertia-preview+json'
+    ghargs = GHArgs(url, data=data, accept=accept)
+    assert not (ghargs == 2)

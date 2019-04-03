@@ -1,5 +1,6 @@
 import os
 import json
+import pytest
 
 from gidgethub import sansio
 
@@ -100,6 +101,31 @@ def test_save_merged_status_merged():
 
     assert len(cards) == 1
     assert cards[note]['merged']
+
+
+def test_get_update_status_ghargs():
+    card = {'note': 'https://github.com/NCAR/xdev-bot-testing/issues/11',
+            'column_name': 'done'}
+    cards = CardDB(card, index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
+                    data={'state': 'open'}, func='patch')
+    assert get_update_status_ghargs(event, database=cards) == ghargs
+
+
+def test_get_update_status_ghargs_not_found():
+    cards = CardDB(index='note')
+
+    with open(os.path.join(PWD, 'payload_examples/card_moved_to_done.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+
+    with pytest.raises(KeyError):
+        get_update_status_ghargs(event, database=cards)
 
 
 def test_get_update_status_ghargs_no_change():
