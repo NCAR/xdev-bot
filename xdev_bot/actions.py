@@ -48,7 +48,9 @@ def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
 
 
 def get_update_pull_status_ghargs(old_card, new_card):
-    if 'merged' in old_card and old_card['merged']:
+    merged = 'merged' in old_card and old_card['merged']
+    moved = old_card['column_name'] != new_card['column_name']
+    if merged and moved:
         return get_move_card_ghargs_from_card(new_card, column='done')
     else:
         return get_update_issue_status_ghargs(old_card, new_card)
