@@ -32,8 +32,8 @@ async def issue_closed_event(event, gh, *args, **kwargs):
 
 @router.register('pull_request', action='closed')
 async def pull_request_closed_event(event, gh, *args, **kwargs):
-    save_merged_status(event)
     ghargs = get_move_card_ghargs(event, column='done')
+    save_merged_status(event)
     await post_or_patch(gh, ghargs)
 
 

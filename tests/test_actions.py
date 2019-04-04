@@ -124,8 +124,9 @@ def test_get_update_status_ghargs_not_found():
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    with pytest.raises(KeyError):
-        get_update_status_ghargs(event, database=cards)
+    ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/75',
+                    data={'state': 'closed'}, func='patch')
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_status_ghargs_no_change():

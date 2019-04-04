@@ -39,7 +39,9 @@ def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
     new_card = get_card_from_card_event(card_event)
     old_card = database[new_card['note']]
     if old_card is None:
-        raise KeyError(f'Moved card not found in database: {new_card["note"]}')
+        print(f'Adding card not found to database: {new_card}')
+        save_card(card_event, database=database)
+        return get_set_status_ghargs(new_card)
     card_t = get_card_type(new_card)
     if card_t == 'issue':
         return get_update_issue_status_ghargs(old_card, new_card)
@@ -61,17 +63,17 @@ def get_update_issue_status_ghargs(old_card, new_card):
     column_was_done = old_card['column_name'] == 'done'
     card_changed_state = column_is_done != column_was_done
     if card_changed_state:
-        state = 'closed' if new_card['column_name'] == 'done' else 'open'
-        return get_set_status_ghargs(new_card, state=state)
+        return get_set_status_ghargs(new_card)
 
 
-def get_set_status_ghargs(card, state='open'):
+def get_set_status_ghargs(card):
     card_t = get_card_type(card)
     prefix = 'https://api.github.com/repos/'
     suffix_items = card['note'].split('/')[-4:]
     suffix_items[-2] = 'issues'
     suffix = '/'.join(suffix_items)
     url = prefix + suffix
+    state = 'closed' if card['column_name'] == 'done' else 'open'
     print(f'Updating {card_t} status to {state}: {card["note"]}')
     return GHArgs(url, data={'state': state}, func='patch')
 

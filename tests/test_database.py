@@ -1,3 +1,4 @@
+import os
 import s3fs
 import pytest
 import pandas as pd
@@ -75,6 +76,17 @@ def test_getitem():
     assert cards[1] is None
 
 
+def test_getitem_index_not_found():
+    card = {'a': 1, 'b': 'c'}
+    cards = CardDB(index='id')
+    cards._df = cards._df.append(card, ignore_index=True)
+
+    assert cards._idxcol == 'id'
+    assert cards._idxcol not in cards._df
+    with pytest.raises(IndexError):
+        cards[3]
+
+
 def test_setitem():
     cards = CardDB(index='id')
     cards[3] = {'id': 2, 'a': 1, 'b': 'c'}
@@ -126,10 +138,17 @@ def test_remove_only_matching_index():
     assert cards[7] == card7
 
 
-def test_save():
+@pytest.fixture
+def s3fn():
     s3fn = 'xdev-bot/test_database.csv'
     if S3FS.exists(s3fn):
         S3FS.rm(s3fn)
+    yield s3fn
+    if S3FS.exists(s3fn):
+        S3FS.rm(s3fn)
+
+
+def test_save(s3fn):
     cards = CardDB(index='id', s3filename=s3fn)
     assert not S3FS.exists(s3fn)
     card0 = {'id': 0, 'a': 1, 'b': 'c', 'd': 4.5}
@@ -147,5 +166,17 @@ def test_save():
     assert cards._df.equals(df)
     cards2 = CardDB(index='id', s3filename=s3fn)
     assert cards._df.equals(cards2._df)
-    if S3FS.exists(s3fn):
-        S3FS.rm(s3fn)
+
+
+def test_read_no_s3_file(s3fn):
+    aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+    aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
+    del os.environ['AWS_SECRET_ACCESS_KEY']
+    del os.environ['AWS_ACCESS_KEY_ID']
+
+    S3FS.touch(s3fn)
+    with pytest.raises(Exception):
+        CardDB(index='id', s3filename=s3fn)
+
+    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
+    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
