@@ -39,7 +39,9 @@ def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
     new_card = get_card_from_card_event(card_event)
     old_card = database[new_card['note']]
     if old_card is None:
-        raise KeyError(f'Moved card not found in database: {new_card["note"]}')
+        print(f'Adding card not found to database: {new_card}')
+        save_card(card_event, database=database)
+        return
     card_t = get_card_type(new_card)
     if card_t == 'issue':
         return get_update_issue_status_ghargs(old_card, new_card)
