@@ -76,6 +76,20 @@ def test_getitem():
     assert cards[1] is None
 
 
+def test_search():
+    card2 = {'id': 2, 'a': 1, 'b': 'c'}
+    card3 = {'id': 3, 'a': 2, 'b': 'c'}
+    card7 = {'id': 7, 'a': 2, 'b': 'f'}
+    cards = CardDB(card2, card3, card7, index='id')
+
+    assert cards.search(z=42) == []
+    assert cards.search(a=1) == [card2]
+    cards_a_2 = cards.search(a=2)
+    assert card2 not in cards_a_2
+    assert card3 in cards_a_2
+    assert card7 in cards_a_2
+
+
 def test_getitem_index_not_found():
     card = {'a': 1, 'b': 'c'}
     cards = CardDB(index='id')
