@@ -6,7 +6,7 @@ from gidgethub import sansio
 
 from xdev_bot.actions import (get_create_card_ghargs, get_card_from_card_event, get_move_card_ghargs,
                               get_update_status_ghargs, get_event_type, get_card_type,
-                              save_card, save_merged_status, remove_card)
+                              save_card, edit_card, save_merged_status, remove_card)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
 
@@ -75,6 +75,31 @@ def test_save_new_card_and_remove():
     remove_card(event, database=cards)
 
     assert len(cards) == 0
+
+
+def test_edit_card():
+    card = {'url': 'https://api.github.com/projects/columns/cards/20333934',
+            'id': 20333934,
+            'note': 'Add NetCDF4 (parallel) support to IOR for I/O testing...\r\n\r\n(https://github.com/hpc/ior/pull/142)',
+            'column_url': 'https://api.github.com/projects/columns/4507386',
+            'column_id': 4507386,
+            'created_at': '2019-04-16T13:05:44Z',
+            'updated_at': '2019-04-16T13:06:00Z',
+            'creator': 'kmpaul',
+            'sender': 'kmpaul',
+            'column_name': 'to_do'}
+    cards = CardDB(card, index='note')
+
+    assert len(cards) == 1
+
+    with open(os.path.join(PWD, 'payload_examples/card_edited_w_changes.json')) as f:
+        payload = json.load(f)
+    event = sansio.Event(payload, event="project_card", delivery_id="12345")
+    card = get_card_from_card_event(event)
+    edit_card(event, database=cards)
+
+    assert len(cards) == 1
+    assert cards[card['note']] == card
 
 
 def test_save_merged_status_closed():
