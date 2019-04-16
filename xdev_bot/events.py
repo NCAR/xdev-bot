@@ -1,5 +1,6 @@
 import gidgethub.routing
 
+from .gidgethub import GHArgs
 from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_status_ghargs,
                       save_card, remove_card, save_merged_status)
 
@@ -7,7 +8,7 @@ router = gidgethub.routing.Router()
 
 
 async def post_or_patch(gh, args):
-    if args and hasattr(gh, args.func):
+    if isinstance(args, GHArgs):
         gh_func = getattr(gh, args.func)
         await gh_func(args.url, **args.kwargs)
 
