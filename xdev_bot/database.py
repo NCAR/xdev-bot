@@ -81,4 +81,4 @@ class CardDB(object):
                 self._df.to_csv(f, index=False)
 
 
-PROJECT_CARDS = CardDB(index='note', s3filename='xdev-bot/database.csv')
+PROJECT_CARDS = CardDB(index='id', s3filename='xdev-bot/database.csv')

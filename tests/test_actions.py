@@ -4,8 +4,8 @@ import pytest
 
 from gidgethub import sansio
 
-from xdev_bot.actions import (issue_opened_call_args, get_card_from_card_event, issue_closed_call_args,
-                              project_card_moved_call_args, get_event_type, get_card_type,
+from xdev_bot.actions import (get_create_card_ghargs, get_card_from_card_event, get_move_card_ghargs,
+                              get_update_status_ghargs, get_event_type, get_card_type,
                               save_card, save_merged_status, remove_card)
 from xdev_bot.database import CardDB
 from xdev_bot.gidgethub import GHArgs
@@ -13,7 +13,7 @@ from xdev_bot.gidgethub import GHArgs
 PWD = os.path.abspath(os.path.dirname(__file__))
 
 
-def test_issue_opened_call_args():
+def test_get_create_card_ghargs():
     with open(os.path.join(PWD, 'payload_examples/issue_opened.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="issues", delivery_id="12345")
@@ -21,18 +21,10 @@ def test_issue_opened_call_args():
     ghargs = GHArgs('/projects/columns/4507386/cards',
                     data={'note': payload['issue']['html_url']},
                     accept='application/vnd.github.inertia-preview+json')
-    assert issue_opened_call_args(event) == [ghargs]
+    assert get_create_card_ghargs(event) == ghargs
 
 
-def test_issue_opened_call_args_with_non_issue_event():
-    with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
-        payload = json.load(f)
-    event = sansio.Event(payload, event="project_card", delivery_id="12345")
-
-    assert issue_opened_call_args(event) == []
-
-
-def test_issue_closed_call_args():
+def test_get_move_card_ghargs():
     card = {'url': 'https://api.github.com/projects/columns/cards/18001901',
             'id': 18001901,
             'note': 'https://github.com/NCAR/xdev-bot-testing/issues/76',
@@ -52,7 +44,7 @@ def test_issue_closed_call_args():
     ghargs = GHArgs('/projects/columns/cards/18001901/moves',
                     data={'position': 'top', 'column_id': 4_507_393},
                     accept='application/vnd.github.inertia-preview+json')
-    assert issue_closed_call_args(event, column='done', database=cards) == [ghargs]
+    assert get_move_card_ghargs(event, column='done', database=cards) == ghargs
 
 
 def test_get_move_card_not_found_ghargs():
@@ -65,7 +57,7 @@ def test_get_move_card_not_found_ghargs():
     ghargs = GHArgs('/projects/columns/4507393/cards',
                     data={'note': payload['issue']['html_url']},
                     accept='application/vnd.github.inertia-preview+json')
-    assert issue_closed_call_args(event, column='done', database=cards) == ghargs
+    assert get_move_card_ghargs(event, column='done', database=cards) == ghargs
 
 
 def test_save_new_card_and_remove():
@@ -122,7 +114,7 @@ def test_get_update_status_ghargs():
 
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/11',
                     data={'state': 'open'}, func='patch')
-    assert project_card_moved_call_args(event, database=cards) == ghargs
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_status_ghargs_not_found():
@@ -134,7 +126,7 @@ def test_get_update_status_ghargs_not_found():
 
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/75',
                     data={'state': 'closed'}, func='patch')
-    assert project_card_moved_call_args(event, database=cards) == ghargs
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_status_ghargs_no_change():
@@ -146,7 +138,7 @@ def test_get_update_status_ghargs_no_change():
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    assert project_card_moved_call_args(event, database=cards) is None
+    assert get_update_status_ghargs(event, database=cards) is None
 
 
 def test_get_update_status_ghargs_closed():
@@ -160,7 +152,7 @@ def test_get_update_status_ghargs_closed():
 
     ghargs = GHArgs('https://api.github.com/repos/NCAR/xdev-bot-testing/issues/75',
                     data={'state': 'closed'}, func='patch')
-    assert project_card_moved_call_args(event, database=cards) == ghargs
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_status_ghargs_merged_pr():
@@ -176,7 +168,7 @@ def test_get_update_status_ghargs_merged_pr():
                     data={'position': 'top', 'column_id': 4_507_393},
                     accept='application/vnd.github.inertia-preview+json')
 
-    assert project_card_moved_call_args(event, database=cards) == ghargs
+    assert get_update_status_ghargs(event, database=cards) == ghargs
 
 
 def test_get_update_status_ghargs_other():
@@ -187,10 +179,10 @@ def test_get_update_status_ghargs_other():
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
 
-    assert project_card_moved_call_args(event, database=cards) is None
+    assert get_update_status_ghargs(event, database=cards) is None
 
 
-def test_get_card_type_issue():
+def test_get_card_issue():
     with open(os.path.join(PWD, 'payload_examples/card_created_issue.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
@@ -211,7 +203,7 @@ def test_get_card_type_issue():
     assert get_card_type(card) == 'issue'
 
 
-def test_get_card_type_pr():
+def test_get_card_pr():
     with open(os.path.join(PWD, 'payload_examples/card_created_pr.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
@@ -232,7 +224,7 @@ def test_get_card_type_pr():
     assert get_card_type(card) == 'pull_request'
 
 
-def test_get_card_type_other():
+def test_get_card_other():
     with open(os.path.join(PWD, 'payload_examples/card_created_other.json')) as f:
         payload = json.load(f)
     event = sansio.Event(payload, event="project_card", delivery_id="12345")
