@@ -3,25 +3,33 @@ from .database import PROJECT_CARDS
 from .gidgethub import GHArgs
 
 
-def get_create_card_ghargs(issue_or_pr_event, column='to_do'):
-    column_id = PROJECT_BOARD['column_ids'][column]
-    event_type = get_event_type(issue_or_pr_event)
-    html_url = issue_or_pr_event.data[event_type]['html_url']
-    url = f'/projects/columns/{column_id}/cards'
-    data = {'note': html_url}
-    accept = 'application/vnd.github.inertia-preview+json'
-    print(f'Creating {event_type} card in {column} column: {data["note"]}')
-    return GHArgs(url, data=data, accept=accept)
+def issue_opened_call_args(issue_event, column='to_do'):
+    return _create_card_call_args_from_issue_event(issue_event, column=column)
 
 
-def get_move_card_ghargs(issue_or_pr_event, column='to_do', database=PROJECT_CARDS):
-    event_type = get_event_type(issue_or_pr_event)
-    html_url = issue_or_pr_event.data[event_type]['html_url']
-    card = database[html_url]
-    if card is None:
-        return get_create_card_ghargs(issue_or_pr_event, column=column)
+def _create_card_call_args_from_issue_event(issue_event, column='to_do'):
+    event_type = get_event_type(issue_event)
+    if event_type:
+        html_url = issue_event.data[event_type]['html_url']
+        url = f'/projects/columns/{PROJECT_BOARD["column_ids"][column]}/cards'
+        data = {'note': html_url}
+        accept = 'application/vnd.github.inertia-preview+json'
+        print(f'Creating {event_type} card in {column} column: {data["note"]}')
+        return [GHArgs(url, data=data, accept=accept)]
     else:
-        return get_move_card_ghargs_from_card(card, column=column)
+        print(f'Unrecognized event type')
+        return []
+
+
+def issue_closed_call_args(issue_event, column='to_do', database=PROJECT_CARDS):
+    event_type = get_event_type(issue_event)
+    if event_type:
+        html_url = issue_event.data[event_type]['html_url']
+        card = database[html_url]
+        if card is None:
+            return issue_opened_call_args(issue_event, column=column)
+        else:
+            return get_move_card_ghargs_from_card(card, column=column)
 
 
 def get_move_card_ghargs_from_card(card, column='to_do'):
@@ -35,7 +43,7 @@ def get_move_card_ghargs_from_card(card, column='to_do'):
     return GHArgs(url, data=data, accept=accept)
 
 
-def get_update_status_ghargs(card_event, database=PROJECT_CARDS):
+def project_card_moved_call_args(card_event, database=PROJECT_CARDS):
     new_card = get_card_from_card_event(card_event)
     old_card = database[new_card['note']]
     if old_card is None:
@@ -111,12 +119,12 @@ def get_card_from_card_event(card_event):
 
 
 def get_event_type(event):
-    if 'issue' in event.data:
-        return 'issue'
-    elif 'pull_request' in event.data:
-        return 'pull_request'
-    else:
+    if not hasattr(event, 'data'):
         return None
+    recognized_types = ['issue', 'pull_request']
+    for recognized_type in recognized_types:
+        if recognized_type in event.data:
+            return recognized_type
 
 
 def get_card_type(card):
