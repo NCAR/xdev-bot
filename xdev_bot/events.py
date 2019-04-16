@@ -1,13 +1,14 @@
 import gidgethub.routing
 
+from .gidgethub import GHArgs
 from .actions import (get_create_card_ghargs, get_move_card_ghargs, get_update_status_ghargs,
-                      save_card, remove_card, save_merged_status)
+                      save_card, edit_card, remove_card, save_merged_status)
 
 router = gidgethub.routing.Router()
 
 
 async def post_or_patch(gh, args):
-    if args and hasattr(gh, args.func):
+    if isinstance(args, GHArgs):
         gh_func = getattr(gh, args.func)
         await gh_func(args.url, **args.kwargs)
 
@@ -47,6 +48,11 @@ async def issue_or_pr_reopened_event(event, gh, *args, **kwargs):
 @router.register('project_card', action='created')
 async def project_card_created_event(event, gh, *args, **kwargs):
     save_card(event)
+
+
+@router.register('project_card', action='edited')
+async def project_card_edited_event(event, gh, *args, **kwargs):
+    edit_card(event)
 
 
 @router.register('project_card', action='moved')

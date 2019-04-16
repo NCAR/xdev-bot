@@ -85,6 +85,15 @@ def save_card(card_event, database=PROJECT_CARDS):
     database.save()
 
 
+def edit_card(card_event, database=PROJECT_CARDS):
+    card = get_card_from_card_event(card_event)
+    old_note = card_event.data['changes']['note']['from']
+    print(f'Editing card in database: {old_note}')
+    database.remove({'note': old_note})
+    database.add(card)
+    database.save()
+
+
 def remove_card(card_event, database=PROJECT_CARDS):
     card = get_card_from_card_event(card_event)
     print(f'Removing card from database: {card["note"]}')

@@ -55,6 +55,14 @@ class CardDB(object):
         idx = self._df[self._df[self._idxcol] == card[self._idxcol]].index
         self._df = self._df.drop(idx).reset_index(drop=True)
 
+    def search(self, **kwargs):
+        if not all([kwarg in self._df for kwarg in kwargs]):
+            return []
+        df = self._df
+        for kwarg in kwargs:
+            df = df.loc[df[kwarg] == kwargs[kwarg]]
+        return df.to_dict('records')
+
     def _read(self):
         try:
             if S3FS.exists(self._s3fn):
